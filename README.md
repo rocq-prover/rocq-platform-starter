@@ -1,178 +1,74 @@
 # rocq-bootstrap
 
-**Reproducible and version-pinned Rocq environment bootstrapper.**
+Reproducible and version-pinned Rocq environment bootstrapper.
+
+> Install and run Rocq in minutes, with a fully reproducible and version-aligned environment.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Status: In Development](https://img.shields.io/badge/status-in%20development-orange)
 
-> **Note**: This project is currently under active development. Features and APIs may change.
+---
 
 ## Overview
 
-**rocq-bootstrap** is a cross-platform installation and environment bootstrap
-tool designed to provide a reproducible and version-aligned development
-environment for the Rocq Platform (formerly Coq).
+rocq-bootstrap is a cross-platform tool designed to download, install, and configure
+a fully reproducible Rocq (formerly Coq) environment with minimal user
+interaction.
 
-It supports both **Rocq** (version 9+) and **Coq** (version < 9) releases,
-automatically selecting the correct packages, extensions, and binaries
-depending on the chosen release.
+It enforces strict version alignment across the entire stack and follows
+the official Rocq Platform release conventions.
 
-This project aims to simplify deployment for:
-
-- Academic courses
-- Research environments
-- Workshops
-- Student onboarding
-- Controlled experimental setups
-
-It enforces strict version alignment and deterministic installation,
-closely following Rocq Platform release conventions.
+The goal is to remove the complexity of manual setup while preserving
+determinism and reproducibility.
 
 ---
 
-## Objectives
+## Demonstration
 
-The tool provides:
+### Main interface
 
-- A reproducible Rocq installation
-- Strict version pinning across the Rocq stack
-- Official repository prioritisation
-- Automated workspace generation
-- VSCode integration (VSRocq for Rocq 9+, VSCoq for Coq < 9)
-- CLI validation of the installed toolchain
-
-The design favours clarity, reproducibility and minimal manual
-configuration.
+<p align="center">
+  <img src="./docs/screens/hero.png" width="800">
+</p>
 
 ---
 
-## Supported Platforms
+### Installation process
 
-### Linux
-
-On Linux systems, Rocq is installed using `opam`. Two installation
-methods are available:
-
-**GUI installer** (`rocq-bootstrap-linux`): A standalone graphical
-installer (Fyne) that handles the entire setup:
-
-- Checks for opam and initialises it if needed
-- Creates a dedicated opam switch following Rocq Platform naming
-  conventions
-- Configures the official Rocq opam repository
-- Installs all Rocq/Coq packages with version pinning
-- Creates a workspace with activation scripts (`activate.sh`,
-  `activate-shell.sh`)
-- Installs the appropriate VSCode extension (VSRocq for Rocq 9+,
-  VSCoq for Coq < 9) and opens the workspace
-
-The GUI displays real-time progress and includes a Doctor diagnostic
-button.
-
-**Shell installer** (`install.sh`): The original script-based installer
-for headless or automated setups.
-
-Both methods:
-
-- Create a dedicated switch following Rocq Platform naming
-  conventions
-
-- Configure the official Rocq opam repository:
-
-      https://rocq-prover.org/opam/released
-
-- Install a fully aligned package stack depending on the version:
-
-  **Rocq 9+:**
-  - `rocq-runtime=<version>`
-  - `rocq-core=<version>`
-  - `rocq-stdlib=<version>`
-  - `rocq-prover=<version>`
-  - `rocqide=<version>` (optional)
-  - `vsrocq-language-server`
-
-  **Coq < 9:**
-  - `coq=<version>`
-  - `coqide=<version>` (optional)
-  - `vscoq-language-server`
-
-All core packages are strictly pinned to the requested version.
+<p align="center">
+  <img src="./docs/screens/install.png" width="800">
+</p>
 
 ---
 
-### macOS
+### Successful setup
 
-On macOS systems, two installation methods are available:
-
-**GUI installer** (`Rocq Bootstrap.app`): A standalone graphical
-installer distributed as a DMG disk image
-(`rocq-bootstrap-macos-arm64.dmg`). It handles the entire setup with
-a graphical interface.
-
-**Shell installer** (`install.sh`): The script-based installer for
-headless or automated setups.
-
-Both methods:
-
-- Resolve the appropriate signed Rocq Platform release asset
-- Download the official signed installer
-- Install the application bundle
-- Locate the language server binary (`vsrocqtop` for Rocq 9+,
-  `vscoqtop` for Coq < 9)
-- Configure a ready-to-use workspace
-
-Only signed release artifacts are accepted.
+<p align="center">
+  <img src="./docs/screens/success.png" width="800">
+</p>
 
 ---
 
-### Windows
+### VSCode environment variables
 
-On Windows, a standalone GUI installer (`rocq-bootstrap-windows.exe`)
-handles the entire setup:
-
-- Downloads the official signed Rocq Platform InnoSetup installer
-- Verifies SHA256 checksum
-- Runs the InnoSetup installer silently
-- Locates the language server binary (`vsrocqtop` or `vscoqtop`)
-- Installs the appropriate VSCode extension (VSRocq or VSCoq)
-- Creates a ready-to-use workspace in `%USERPROFILE%\rocq-workspace`
-- Configures VSCode settings and opens the workspace
-
-The installer is a Go application with an embedded GUI (Fyne) that
-displays real-time progress. It embeds the manifest and workspace
-templates at build time.
-
-**Default installation directory:**
-
-    C:\Rocq-platform~<rocq_major.minor>~<platform_year.month>
-
-Example: `C:\Rocq-platform~9.0~2025.08`
-
-The installer automatically detects existing installations (via
-filesystem checks, Windows registry, and PATH lookup) and skips
-the download/install steps when an existing installation is found.
+![VSCode](./docs/screens/vscodevar.png)
 
 ---
 
-## Reproducibility Model
+### Ready-to-use environment in VSCode
 
-The installation process is driven by a manifest file:
+![VSCode](./docs/screens/vscode.png)
 
-    manifest/latest.json
+---
 
-This file specifies:
+## Key Features
 
-- Platform release identifier
-- Rocq version
-- Optional snapshot identifier
-- macOS and Windows release assets
-- SHA256 checksums
-
-The manifest guarantees:
-
-- Version consistency
-- Controlled dependency resolution
-- Explicit release targeting
+- Reproducible Rocq installation
+- Strict version pinning across the toolchain
+- Automatic workspace generation
+- VSCode integration (VSRocq / VSCoq)
+- Cross-platform support (Linux, macOS, Windows)
+- Deterministic and version-aligned setup
 
 ---
 
@@ -180,220 +76,125 @@ The manifest guarantees:
 
 ### Linux
 
-For the shell installer (`install.sh`):
+- opam ≥ 2.1
+- jq
+- curl
+- VSCode (optional)
 
-- `opam ≥ 2.1`
-- `jq`
-- `curl`
-- VSCode (optional but recommended)
+For GUI build:
 
-For the GUI installer (`rocq-bootstrap-linux`): no prerequisites for
-end users — just run the binary. opam will be detected automatically.
+- go ≥ 1.22
+- Fyne dependencies
 
-For building the GUI from source:
-
-- `go >= 1.22`
-- Fyne system dependencies: `libgl-dev libxxf86vm-dev libxi-dev
-  libxcursor-dev libxrandr-dev libxinerama-dev`
+---
 
 ### macOS
 
-For the shell installer (`install.sh`):
-
-- `curl`
-- `jq`
-- VSCode (optional but recommended)
-
-For the GUI installer (`Rocq Bootstrap.app`): no prerequisites — open
-the DMG and drag the app to Applications.
-
-### Windows
-
-No prerequisites for end users — just run `rocq-bootstrap-windows.exe`.
-
-For building from source (cross-compilation from Linux):
-
-- `go >= 1.22`
-- `gcc-mingw-w64-x86-64`
-
----
-
-## Usage
-
-### Standard installation
-
-```bash
-./install.sh
-```
-
----
-
-### Specify a workspace directory
-
-```bash
-./install.sh --workspace /path/to/workspace
-```
-
----
-
-### Recreate switch (Linux only)
-
-```bash
-./install.sh --recreate-switch
-```
-
-This removes and recreates the opam switch to ensure a clean
-environment.
-
----
-
-### Linux (GUI)
-
-Download `rocq-bootstrap-linux` from the
-[Releases](https://github.com/justme0606/rocq-bootstrap/releases)
-page, then:
-
-```bash
-chmod +x rocq-bootstrap-linux
-
-# Run directly (no installation needed)
-./rocq-bootstrap-linux
-
-# Or install as a desktop application (icon in app menu)
-./rocq-bootstrap-linux --install
-
-# Uninstall
-rocq-bootstrap --uninstall
-```
-
-`--install` copies the binary to `~/.local/bin/`, the Rocq icon to
-`~/.local/share/icons/`, and creates a `.desktop` entry so the
-application appears in your desktop environment's application menu.
-
-To build from source:
-
-```bash
-cd linux
-make all       # production build
-make install   # install to ~/.local (binary, icon, .desktop)
-make uninstall # remove from ~/.local
-make clean     # remove build artifacts
-```
-
----
-
-### macOS (GUI)
-
-Download `rocq-bootstrap-macos-arm64.dmg` from the
-[Releases](https://github.com/justme0606/rocq-bootstrap/releases)
-page, open the DMG and drag **Rocq Bootstrap** to Applications.
-
-To build from source:
-
-```bash
-cd macos
-make all       # production build (creates .app bundle and .dmg)
-make clean     # remove build artifacts
-```
+- curl
+- jq
+- VSCode (optional)
 
 ---
 
 ### Windows
 
-Download `rocq-bootstrap-windows.exe` from the
-[Releases](https://github.com/justme0606/rocq-bootstrap/releases)
-page, then simply run it.
-
-To build from source (cross-compile from Linux):
-
-```bash
-cd windows
-make all       # production build (no console window)
-make debug     # debug build (shows console for error output)
-make clean     # remove build artifacts
-```
+No prerequisites for end users.
 
 ---
 
-### Test-only mode
+## Installation
 
-```bash
-./install.sh --test-only
-```
+Download the appropriate release for your platform:
 
-This mode:
-
-- Resolves the manifest
-- Prepares the workspace
-- Runs validation tests
-- Does not install Rocq
+https://github.com/justme0606/rocq-bootstrap/releases
 
 ---
 
-## Workspace Structure
+### Linux
 
-The installer generates:
+Download:
 
-    <workspace>/
-     ├── main.v                  # Sample proof file
-     ├── test.v                  # Validation test file
-     ├── _RocqProject            # Rocq project configuration
-     ├── .vscode/
-     │   └── settings.json       # vsrocqtop path configuration
-     ├── activate.sh             # Shell activation script (Linux only)
-     └── activate-shell.sh       # Spawns activated shell (Linux only)
+rocq-bootstrap
 
-The workspace is configured to:
+Then run:
 
-- Use the installed language server (`vsrocqtop` or `vscoqtop`)
-- Open directly in VSCode with the correct extension settings
-  (`vsrocq.path` or `vscoq.path`)
-- Compile a minimal validation file
+chmod +x rocq-bootstrap
+./rocq-bootstrap
 
 ---
 
-## Validation Procedure
+### macOS
 
-Upon completion, the installer performs a CLI validation:
+Download:
 
-    rocq compile test.v
+rocq-bootstrap-macos-arm64.dmg
 
-Installation is considered successful only if compilation succeeds.
+Then:
+
+1. Open the DMG
+2. Drag Rocq Bootstrap into Applications
+3. Launch the application
 
 ---
 
-## Switch Naming Convention (Linux)
+### Windows
 
-Switches follow the Rocq Platform naming scheme:
+Download:
 
-    CP.<platform_release>~<rocq_major.minor>
+rocq-bootstrap-windows.exe
 
-Examples:
+Then simply run the executable.
 
-    CP.2025.08.1~9.0
-    CP.2025.08.1~9.0~2025.08
+---
 
-This ensures traceability and compatibility with official release
-patterns.
+## What happens next
+
+Once launched, the application:
+
+- Installs the appropriate Rocq Platform version
+- Configures the environment
+- Sets up a ready-to-use workspace
+- Installs and configures VSCode integration
+
+No manual configuration is required.
+
+---
+
+## Supported Platforms
+
+Linux, macOS, Windows
+
+---
+
+## Reproducibility Model
+
+Driven by:
+
+manifest/latest.json
+
+Ensures:
+
+- Version consistency
+- Controlled dependency resolution
+- Explicit release targeting
 
 ---
 
 ## Intended Audience
 
-This tool is primarily intended for:
-
-- Research groups
-- Teaching staff
-- Graduate and undergraduate courses
-- Controlled Rocq environments requiring reproducibility
+- Academic courses
+- Research environments
+- Workshops
+- Student onboarding
+- Reproducible setups
 
 ---
 
 ## License
 
-Copyright (c) 2026 Sylvain Borgogno
+MIT License
 
-Licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+---
 
 ## Repository
 
