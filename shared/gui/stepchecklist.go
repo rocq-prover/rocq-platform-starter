@@ -28,13 +28,13 @@ func NewStepChecklist(steps []string) *StepChecklist {
 
 	rows := make([]fyne.CanvasObject, 0, len(steps)*2)
 	for i, name := range steps {
-		icon := canvas.NewText(" ○ ", rocqMutedText)
+		icon := canvas.NewText(" ○ ", rocqLightDisabled)
 		icon.TextSize = 13
 
-		label := canvas.NewText(name, rocqMutedText)
+		label := canvas.NewText(name, rocqLightDisabled)
 		label.TextSize = 13
 
-		detail := canvas.NewText("", rocqMutedText)
+		detail := canvas.NewText("", rocqLightDisabled)
 		detail.TextSize = 11
 		detail.Hide()
 
@@ -73,7 +73,7 @@ func (sc *StepChecklist) SetInProgress(step int, detail string) {
 	sc.icons[idx].Text = " ▶ "
 	sc.icons[idx].Color = RocqOrange
 	sc.icons[idx].Refresh()
-	sc.names[idx].Color = rocqDarkText
+	sc.names[idx].Color = rocqLightFg
 	sc.names[idx].TextStyle = fyne.TextStyle{Bold: true}
 	sc.names[idx].Refresh()
 	sc.setDetail(idx, detail)
@@ -104,7 +104,7 @@ func (sc *StepChecklist) markDone(idx int) {
 	sc.icons[idx].Text = " ✓ "
 	sc.icons[idx].Color = rocqSuccess
 	sc.icons[idx].Refresh()
-	sc.names[idx].Color = rocqDarkText
+	sc.names[idx].Color = rocqLightFg
 	sc.names[idx].TextStyle = fyne.TextStyle{}
 	sc.names[idx].Refresh()
 }
@@ -121,7 +121,7 @@ func (sc *StepChecklist) setDetail(idx int, text string) {
 
 // AppendSummary adds a summary line below the checklist steps.
 func (sc *StepChecklist) AppendSummary(text string) {
-	line := canvas.NewText(text, rocqDarkText)
+	line := canvas.NewText(text, rocqLightFg)
 	line.TextSize = 12
 	sc.Container.Add(line)
 }

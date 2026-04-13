@@ -124,9 +124,10 @@ func FindExistingInstallations() []string {
 
 // Result holds information about the installation outcome.
 type Result struct {
-	VSCodeFound    bool   // Whether VSCode was detected on the system
-	InstalledApp   string // Path to the installed .app
-	VsrocqtopPath  string // Path to vsrocqtop binary
+	VSCodeFound       bool   // Whether VSCode was detected on the system
+	InstalledApp      string // Path to the installed .app
+	VsrocqtopPath     string // Path to vsrocqtop binary
+	VsrocqtopWarning  string // Non-empty if vsrocqtop was not found
 }
 
 // Run executes the installation pipeline.
@@ -220,7 +221,9 @@ func Run(cfg *Config) (*Result, error) {
 	cfg.OnStep(4, fmt.Sprintf("Locating %s...", topBinLabel), 0.0)
 	vsrocqtopPath, err := FindLanguageServerTop(installedAppPath, cfg.Manifest.RocqVersion)
 	if err != nil {
-		cfg.Logger.Log("WARNING: %s not found: %v", topBinLabel, err)
+		warnMsg := fmt.Sprintf("%s not found: %v. VSCode will not be able to check proofs until this is resolved.", topBinLabel, err)
+		cfg.Logger.Log("WARNING: %s", warnMsg)
+		result.VsrocqtopWarning = warnMsg
 		cfg.OnStep(4, fmt.Sprintf("%s not found (will skip VSCode settings).", topBinLabel), 1.0)
 	} else {
 		cfg.Logger.Log("Found %s: %s", topBinLabel, vsrocqtopPath)
