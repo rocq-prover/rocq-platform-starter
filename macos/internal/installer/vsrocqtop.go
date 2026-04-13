@@ -12,7 +12,7 @@ import (
 
 // FindLanguageServerTop searches for the vsrocqtop or vscoqtop binary depending on the version.
 // Search order:
-// 1. Inside the installed .app bundle (Contents/ walk, max depth 6)
+// 1. Inside the installed .app bundle (Contents/ walk, max depth 10)
 // 2. exec.LookPath
 // 3. Known paths: /usr/local/bin, /opt/homebrew/bin
 // 4. Scan /Applications and ~/Applications for *rocq*.app / *coq*.app
@@ -28,8 +28,8 @@ func FindLanguageServerTop(installedAppPath, rocqVersion string) (string, error)
 	if installedAppPath != "" {
 		contentsDir := filepath.Join(installedAppPath, "Contents")
 		if info, err := os.Stat(contentsDir); err == nil && info.IsDir() {
-			debugLog("[%s] searching in %s (max depth 6)", binName, contentsDir)
-			found := walkForBinary(contentsDir, binName, 6)
+			debugLog("[%s] searching in %s (max depth 10)", binName, contentsDir)
+			found := walkForBinary(contentsDir, binName, 10)
 			if found != "" {
 				debugLog("[%s] FOUND in app bundle: %s", binName, found)
 				return found, nil
@@ -77,7 +77,7 @@ func FindLanguageServerTop(installedAppPath, rocqVersion string) (string, error)
 			}
 			appContents := filepath.Join(baseDir, e.Name(), "Contents")
 			if info, err := os.Stat(appContents); err == nil && info.IsDir() {
-				found := walkForBinary(appContents, binName, 6)
+				found := walkForBinary(appContents, binName, 10)
 				if found != "" {
 					debugLog("[%s] FOUND in app scan: %s", binName, found)
 					return found, nil

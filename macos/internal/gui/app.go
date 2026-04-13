@@ -127,15 +127,25 @@ func runInstall(ctx *sharedgui.InstallContext, m *manifest.Manifest, templates f
 	ctx.LogPanel.Append(fmt.Sprintf("Installed app: %s", result.InstalledApp))
 	ctx.LogPanel.Append("Workspace: ~/rocq-workspace")
 
+	if result.VsrocqtopWarning != "" {
+		ctx.LogPanel.Append(fmt.Sprintf("WARNING: %s", result.VsrocqtopWarning))
+	}
+
 	if ctx.Checklist != nil {
 		ctx.Checklist.AppendSummary("")
 		ctx.Checklist.AppendSummary(fmt.Sprintf("Installation complete! (%s)", elapsed))
 		ctx.Checklist.AppendSummary(fmt.Sprintf("Installed app: %s", result.InstalledApp))
 		ctx.Checklist.AppendSummary("Workspace: ~/rocq-workspace")
+		if result.VsrocqtopWarning != "" {
+			ctx.Checklist.AppendSummary(fmt.Sprintf("WARNING: %s", result.VsrocqtopWarning))
+		}
 	}
 
-	sharedgui.ShowSuccess(ctx.Window,
-		fmt.Sprintf("Rocq Platform has been installed successfully in %s.\n\n", elapsed)+
-			fmt.Sprintf("Installed app: %s\n", result.InstalledApp)+
-			"Workspace: ~/rocq-workspace")
+	successMsg := fmt.Sprintf("Rocq Platform has been installed successfully in %s.\n\n", elapsed) +
+		fmt.Sprintf("Installed app: %s\n", result.InstalledApp) +
+		"Workspace: ~/rocq-workspace"
+	if result.VsrocqtopWarning != "" {
+		successMsg += fmt.Sprintf("\n\nWarning: %s", result.VsrocqtopWarning)
+	}
+	sharedgui.ShowSuccess(ctx.Window, successMsg)
 }
