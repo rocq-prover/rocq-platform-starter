@@ -5,7 +5,7 @@ Reproducible and version-pinned Rocq environment bootstrapper.
 > Install and run Rocq in minutes, with a fully reproducible and version-aligned environment.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Status: In Development](https://img.shields.io/badge/status-in%20development-orange)
+![Status: Active development](https://img.shields.io/badge/status-active%20development-brightgreen)
 
 ---
 
