@@ -1,4 +1,4 @@
-# rocq-bootstrap
+# rocq-platform-starter
 
 Reproducible and version-pinned Rocq environment bootstrapper.
 
@@ -11,7 +11,7 @@ Reproducible and version-pinned Rocq environment bootstrapper.
 
 ## Overview
 
-rocq-bootstrap is a cross-platform tool designed to download, install, and configure
+rocq-platform-starter is a cross-platform tool designed to download, install, and configure
 a fully reproducible Rocq (formerly Coq) environment with minimal user
 interaction.
 
@@ -106,7 +106,7 @@ No prerequisites for end users.
 
 Download the appropriate release for your platform:
 
-https://github.com/justme0606/rocq-bootstrap/releases
+https://github.com/justme0606/rocq-platform-starter/releases
 
 ---
 
@@ -114,12 +114,12 @@ https://github.com/justme0606/rocq-bootstrap/releases
 
 Download:
 
-rocq-bootstrap
+rocq-platform-starter
 
 Then run:
 
-chmod +x rocq-bootstrap
-./rocq-bootstrap
+chmod +x rocq-platform-starter
+./rocq-platform-starter
 
 ---
 
@@ -127,12 +127,12 @@ chmod +x rocq-bootstrap
 
 Download:
 
-rocq-bootstrap-macos-arm64.dmg
+rocq-platform-starter-macos-arm64.dmg
 
 Then:
 
 1. Open the DMG
-2. Drag Rocq Bootstrap into Applications
+2. Drag Rocq Platform Starter into Applications
 3. Launch the application
 
 ---
@@ -141,7 +141,7 @@ Then:
 
 Download:
 
-rocq-bootstrap-windows.exe
+rocq-platform-starter-windows.exe
 
 Then simply run the executable.
 
@@ -198,4 +198,4 @@ MIT License
 
 ## Repository
 
-https://github.com/justme0606/rocq-bootstrap
+https://github.com/justme0606/rocq-platform-starter
