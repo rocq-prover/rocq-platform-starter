@@ -118,7 +118,7 @@ func Run(cfg *AppConfig) {
 		a.SetIcon(iconRes)
 	}
 
-	windowTitle := "Rocq Platform Installer"
+	windowTitle := "Rocq Platform Starter"
 	if cfg.Version != "" && cfg.Version != "dev" {
 		windowTitle += " - " + cfg.Version
 	}
@@ -138,7 +138,7 @@ func Run(cfg *AppConfig) {
 	titleRocq.TextSize = 20
 	titleRocq.TextStyle = fyne.TextStyle{Bold: true}
 
-	titleRest := canvas.NewText(" Platform Installer", RocqBlue)
+	titleRest := canvas.NewText(" Platform Starter", RocqBlue)
 	titleRest.TextSize = 20
 	titleRest.TextStyle = fyne.TextStyle{Bold: true}
 
@@ -414,7 +414,7 @@ func Run(cfg *AppConfig) {
 	})
 	doctorBtn.Importance = widget.HighImportance
 
-	versionLabel := widget.NewLabelWithStyle("v"+cfg.Version, fyne.TextAlignTrailing, fyne.TextStyle{})
+	versionLabel := widget.NewLabelWithStyle(cfg.Version, fyne.TextAlignTrailing, fyne.TextStyle{})
 	versionLabel.Importance = widget.LowImportance
 
 	bottomBar := container.NewPadded(

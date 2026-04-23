@@ -1,6 +1,6 @@
-BINARY      = rocq-bootstrap
+BINARY      = rocq-platform-starter
 GO          = go
-SRC_DIR     = ./cmd/rocq-bootstrap
+SRC_DIR     = ./cmd/rocq-platform-starter
 
 # Paths to source assets (relative to repo root)
 REPO_ROOT   = ..
@@ -8,9 +8,9 @@ MANIFEST    = $(REPO_ROOT)/manifest/latest.json
 TEMPLATES   = $(REPO_ROOT)/templates
 
 # App bundle configuration
-APP_NAME    = Rocq Bootstrap.app
-BUNDLE_ID   = org.rocq-prover.rocq-bootstrap
-DMG_NAME    = rocq-bootstrap.dmg
+APP_NAME    = Rocq-Platform-Starter.app
+BUNDLE_ID   = org.rocq-prover.rocq-platform-starter
+DMG_NAME    = rocq-platform-starter.dmg
 
 VERSION     ?= dev
 LDFLAGS     = -s -w -X main.Version=$(VERSION)
@@ -73,7 +73,7 @@ app-bundle: $(BINARY)
 dmg: app-bundle
 	@echo "==> Creating DMG: $(DMG_NAME)"
 	rm -f $(DMG_NAME)
-	hdiutil create -volname "Rocq Bootstrap" \
+	hdiutil create -volname "Rocq-Platform-Starter" \
 		-srcfolder "$(APP_NAME)" \
 		-ov -format UDZO \
 		$(DMG_NAME)

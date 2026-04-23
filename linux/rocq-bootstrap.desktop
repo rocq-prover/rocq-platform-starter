@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=Rocq Bootstrap
-Comment=Rocq Platform Installer
-Exec=rocq-bootstrap
-Icon=rocq-bootstrap
-Terminal=false
-Type=Application
-Categories=Development;Education;Science;
-Keywords=Rocq;Coq;proof;assistant;opam;

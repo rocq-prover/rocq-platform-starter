@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	sharedvscode "github.com/justme0606/rocq-bootstrap/shared/vscode"
+	sharedvscode "github.com/justme0606/rocq-platform-starter/shared/vscode"
 )
 
 // IsCoq returns true if the version refers to a Coq release (major version < 9).

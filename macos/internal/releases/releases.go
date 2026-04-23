@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	sharedreleases "github.com/justme0606/rocq-bootstrap/shared/releases"
+	sharedreleases "github.com/justme0606/rocq-platform-starter/shared/releases"
 
-	"github.com/justme0606/rocq-bootstrap/macos/internal/manifest"
+	"github.com/justme0606/rocq-platform-starter/macos/internal/manifest"
 )
 
 // FetchReleases returns available release tags from GitHub, filtered to exclude

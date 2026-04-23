@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"strings"
 
-	sharedreleases "github.com/justme0606/rocq-bootstrap/shared/releases"
+	sharedreleases "github.com/justme0606/rocq-platform-starter/shared/releases"
 
-	"github.com/justme0606/rocq-bootstrap/linux/internal/manifest"
+	"github.com/justme0606/rocq-platform-starter/linux/internal/manifest"
 )
 
 type ghContent struct {

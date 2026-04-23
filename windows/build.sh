@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# build.sh — Cross-compile rocq-bootstrap.exe from Linux
+# build.sh — Cross-compile rocq-platform-starter.exe from Linux
 #
 # Prerequisites:
 #   sudo apt install gcc-mingw-w64-x86-64 golang
@@ -15,15 +15,15 @@ echo "==> Syncing embedded assets..."
 cp -f ../manifest/latest.json embedded/manifest/latest.json
 cp -f ../templates/test.v embedded/templates/test.v
 
-echo "==> Building rocq-bootstrap.exe (Windows amd64)..."
+echo "==> Building rocq-platform-starter.exe (Windows amd64)..."
 CGO_ENABLED=1 \
 CC=x86_64-w64-mingw32-gcc \
 GOOS=windows \
 GOARCH=amd64 \
   go build \
     -ldflags="-H windowsgui -s -w" \
-    -o rocq-bootstrap.exe \
-    ./cmd/rocq-bootstrap/
+    -o rocq-platform-starter.exe \
+    ./cmd/rocq-platform-starter/
 
-echo "==> Done: $(ls -lh rocq-bootstrap.exe | awk '{print $5, $NF}')"
-file rocq-bootstrap.exe
+echo "==> Done: $(ls -lh rocq-platform-starter.exe | awk '{print $5, $NF}')"
+file rocq-platform-starter.exe

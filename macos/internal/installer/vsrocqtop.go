@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/justme0606/rocq-bootstrap/macos/internal/vscode"
+	"github.com/justme0606/rocq-platform-starter/macos/internal/vscode"
 )
 
 // FindLanguageServerTop searches for the vsrocqtop or vscoqtop binary depending on the version.

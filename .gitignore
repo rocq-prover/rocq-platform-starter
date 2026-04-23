@@ -59,18 +59,18 @@ downloads/
 
 # Windows build artifacts
 windows/*.exe
-windows/cmd/rocq-bootstrap/*.syso
+windows/cmd/rocq-platform-starter/*.syso
 
 # macOS build artifacts
-macos/rocq-bootstrap
-macos/rocq-bootstrap-*
+macos/rocq-platform-starter
+macos/rocq-platform-starter-*
 macos/*.app/
 macos/*.dmg
 
 # Linux build artifacts
-linux/rocq-bootstrap
-linux/rocq-bootstrap-debug
-linux/rocq-bootstrap.desktop
+linux/rocq-platform-starter
+linux/rocq-platform-starter-debug
+linux/rocq-platform-starter.desktop
 
 # SHA256 computation cache
 .sha256_cache/

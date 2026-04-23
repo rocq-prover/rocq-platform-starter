@@ -3,7 +3,7 @@ package workspace
 import (
 	"io/fs"
 
-	sharedworkspace "github.com/justme0606/rocq-bootstrap/shared/workspace"
+	sharedworkspace "github.com/justme0606/rocq-platform-starter/shared/workspace"
 )
 
 // Create creates the workspace directory with template files.

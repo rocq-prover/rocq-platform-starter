@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# build.sh — Build rocq-bootstrap macOS app bundle and DMG
+# build.sh — Build rocq-platform-starter macOS app bundle and DMG
 #
 # Prerequisites:
 #   - macOS with Xcode Command Line Tools
@@ -18,17 +18,17 @@ cp -f ../templates/test.v embedded/templates/test.v
 cp -f ../templates/main.v embedded/templates/main.v
 cp -f ../templates/_RocqProject embedded/templates/_RocqProject
 
-echo "==> Building rocq-bootstrap (macOS arm64)..."
+echo "==> Building rocq-platform-starter (macOS arm64)..."
 CGO_ENABLED=1 \
 GOOS=darwin \
 GOARCH=arm64 \
   go build \
     -ldflags="-s -w" \
-    -o rocq-bootstrap \
-    ./cmd/rocq-bootstrap/
+    -o rocq-platform-starter \
+    ./cmd/rocq-platform-starter/
 
-echo "==> Done: $(ls -lh rocq-bootstrap | awk '{print $5, $NF}')"
-file rocq-bootstrap
+echo "==> Done: $(ls -lh rocq-platform-starter | awk '{print $5, $NF}')"
+file rocq-platform-starter
 
 echo ""
 echo "To create the .app bundle and DMG, run: make app-bundle dmg"

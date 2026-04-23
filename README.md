@@ -132,7 +132,7 @@ rocq-platform-starter-macos-arm64.dmg
 Then:
 
 1. Open the DMG
-2. Drag Rocq Platform Starter into Applications
+2. Drag Rocq-Platform-Starter into Applications
 3. Launch the application
 
 ---

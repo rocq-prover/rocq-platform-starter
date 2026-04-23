@@ -17,7 +17,7 @@ func SetupEarlyLog() *os.File {
 	logDir := filepath.Join(home, ".rocq-setup", "logs")
 	os.MkdirAll(logDir, 0o755)
 
-	name := fmt.Sprintf("rocq-bootstrap-%s.log", time.Now().Format("20060102-150405"))
+	name := fmt.Sprintf("rocq-platform-starter-%s.log", time.Now().Format("20060102-150405"))
 	f, err := os.Create(filepath.Join(logDir, name))
 	if err != nil {
 		return nil
@@ -39,7 +39,7 @@ func Bootstrap(cfg *BootstrapConfig) {
 	earlyLog := SetupEarlyLog()
 	if earlyLog != nil {
 		defer earlyLog.Close()
-		fmt.Fprintf(earlyLog, "[%s] rocq-bootstrap starting\n", time.Now().Format("15:04:05"))
+		fmt.Fprintf(earlyLog, "[%s] rocq-platform-starter starting\n", time.Now().Format("15:04:05"))
 	}
 
 	if err := cfg.LoadManifest(); err != nil {

@@ -1,8 +1,8 @@
-BINARY      = rocq-bootstrap.exe
+BINARY      = rocq-platform-starter.exe
 GO          = go
 CC_WINDOWS  = x86_64-w64-mingw32-gcc
 WINDRES     = x86_64-w64-mingw32-windres
-SRC_DIR     = ./cmd/rocq-bootstrap
+SRC_DIR     = ./cmd/rocq-platform-starter
 
 # Paths to source assets (relative to repo root)
 REPO_ROOT   = ..
@@ -38,7 +38,7 @@ $(BINARY): sync-assets $(SYSO_FILE)
 # Debug build: shows console window for error output
 debug: sync-assets $(SYSO_FILE)
 	CGO_ENABLED=1 CC=$(CC_WINDOWS) GOOS=windows GOARCH=amd64 \
-		$(GO) build -ldflags="-s -w -X main.Version=$(VERSION)" -o rocq-bootstrap-debug.exe $(SRC_DIR)
+		$(GO) build -ldflags="-s -w -X main.Version=$(VERSION)" -o rocq-platform-starter-debug.exe $(SRC_DIR)
 
 clean:
-	rm -f $(BINARY) rocq-bootstrap-debug.exe $(SYSO_FILE)
+	rm -f $(BINARY) rocq-platform-starter-debug.exe $(SYSO_FILE)

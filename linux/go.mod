@@ -1,10 +1,10 @@
-module github.com/justme0606/rocq-bootstrap/linux
+module github.com/justme0606/rocq-platform-starter/linux
 
 go 1.22
 
-require github.com/justme0606/rocq-bootstrap/shared v0.0.0
+require github.com/justme0606/rocq-platform-starter/shared v0.0.0
 
-replace github.com/justme0606/rocq-bootstrap/shared => ../shared
+replace github.com/justme0606/rocq-platform-starter/shared => ../shared
 
 require (
 	fyne.io/fyne/v2 v2.5.4 // indirect
