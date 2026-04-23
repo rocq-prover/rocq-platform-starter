@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/justme0606/rocq-bootstrap/linux/internal/manifest"
-	"github.com/justme0606/rocq-bootstrap/linux/internal/vscode"
-	"github.com/justme0606/rocq-bootstrap/linux/internal/workspace"
+	"github.com/justme0606/rocq-platform-starter/linux/internal/manifest"
+	"github.com/justme0606/rocq-platform-starter/linux/internal/vscode"
+	"github.com/justme0606/rocq-platform-starter/linux/internal/workspace"
 )
 
 func debugLog(format string, args ...interface{}) {

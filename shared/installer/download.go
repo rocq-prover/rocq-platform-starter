@@ -19,7 +19,7 @@ func Download(url, destDir, destFilename string, progress ProgressFunc) (string,
 	if err != nil {
 		return "", fmt.Errorf("create request: %w", err)
 	}
-	req.Header.Set("User-Agent", "rocq-bootstrap/1.0")
+	req.Header.Set("User-Agent", "rocq-platform-starter/1.0")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

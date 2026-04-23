@@ -42,26 +42,26 @@ jobs:
 
       - name: Verify ELF binary
         working-directory: linux
-        run: file rocq-bootstrap | grep -q "ELF 64-bit LSB"
+        run: file rocq-platform-starter | grep -q "ELF 64-bit LSB"
 
       - name: Test --help
         working-directory: linux
-        run: ./rocq-bootstrap --help | grep -q "\-\-install"
+        run: ./rocq-platform-starter --help | grep -q "\-\-install"
 
       - name: Test --install / --uninstall
         working-directory: linux
         run: |
-          ./rocq-bootstrap --install
-          test -f "$HOME/.local/bin/rocq-bootstrap"
-          test -f "$HOME/.local/share/applications/rocq-bootstrap.desktop"
-          ./rocq-bootstrap --uninstall
-          test ! -f "$HOME/.local/bin/rocq-bootstrap"
+          ./rocq-platform-starter --install
+          test -f "$HOME/.local/bin/rocq-platform-starter"
+          test -f "$HOME/.local/share/applications/rocq-platform-starter.desktop"
+          ./rocq-platform-starter --uninstall
+          test ! -f "$HOME/.local/bin/rocq-platform-starter"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rocq-bootstrap-linux
-          path: linux/rocq-bootstrap
+          name: rocq-platform-starter-linux
+          path: linux/rocq-platform-starter
 
   # ──────────────────────────────────────────────
   # Windows
@@ -90,13 +90,13 @@ jobs:
 
       - name: Verify PE32+ executable
         working-directory: windows
-        run: file rocq-bootstrap.exe | grep -q "PE32+ executable (GUI) x86-64"
+        run: file rocq-platform-starter.exe | grep -q "PE32+ executable (GUI) x86-64"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rocq-bootstrap-windows
-          path: windows/rocq-bootstrap.exe
+          name: rocq-platform-starter-windows
+          path: windows/rocq-platform-starter.exe
 
   # ──────────────────────────────────────────────
   # macOS
@@ -123,8 +123,8 @@ jobs:
       - name: Verify DMG
         working-directory: macos
         run: |
-          test -f rocq-bootstrap.dmg
-          SIZE=$(stat -f%z rocq-bootstrap.dmg)
+          test -f rocq-platform-starter.dmg
+          SIZE=$(stat -f%z rocq-platform-starter.dmg)
           echo "DMG size: $SIZE bytes"
           if [ "$SIZE" -lt 1000000 ]; then
             echo "DMG seems too small ($SIZE bytes)"
@@ -134,16 +134,16 @@ jobs:
       - name: Verify app bundle inside DMG
         working-directory: macos
         run: |
-          MOUNT_POINT=$(hdiutil attach rocq-bootstrap.dmg -nobrowse | awk '/Volumes\// {for(i=3;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ *$//')
-          test -d "$MOUNT_POINT/Rocq Bootstrap.app"
-          test -f "$MOUNT_POINT/Rocq Bootstrap.app/Contents/MacOS/rocq-bootstrap"
+          MOUNT_POINT=$(hdiutil attach rocq-platform-starter.dmg -nobrowse | awk '/Volumes\// {for(i=3;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ *$//')
+          test -d "$MOUNT_POINT/Rocq-Platform-Starter.app"
+          test -f "$MOUNT_POINT/Rocq-Platform-Starter.app/Contents/MacOS/rocq-platform-starter"
           hdiutil detach "$MOUNT_POINT" || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rocq-bootstrap-macos
-          path: macos/rocq-bootstrap.dmg
+          name: rocq-platform-starter-macos
+          path: macos/rocq-platform-starter.dmg
 
   # ──────────────────────────────────────────────
   # Release
@@ -165,19 +165,19 @@ jobs:
 
       - name: Verify all artifacts
         run: |
-          test -f artifacts/rocq-bootstrap-windows/rocq-bootstrap.exe
-          echo "Windows: $(stat -c%s artifacts/rocq-bootstrap-windows/rocq-bootstrap.exe) bytes"
-          test -f artifacts/rocq-bootstrap-macos/rocq-bootstrap.dmg
-          echo "macOS:   $(stat -c%s artifacts/rocq-bootstrap-macos/rocq-bootstrap.dmg) bytes"
-          test -f artifacts/rocq-bootstrap-linux/rocq-bootstrap
-          echo "Linux:   $(stat -c%s artifacts/rocq-bootstrap-linux/rocq-bootstrap) bytes"
+          test -f artifacts/rocq-platform-starter-windows/rocq-platform-starter.exe
+          echo "Windows: $(stat -c%s artifacts/rocq-platform-starter-windows/rocq-platform-starter.exe) bytes"
+          test -f artifacts/rocq-platform-starter-macos/rocq-platform-starter.dmg
+          echo "macOS:   $(stat -c%s artifacts/rocq-platform-starter-macos/rocq-platform-starter.dmg) bytes"
+          test -f artifacts/rocq-platform-starter-linux/rocq-platform-starter
+          echo "Linux:   $(stat -c%s artifacts/rocq-platform-starter-linux/rocq-platform-starter) bytes"
 
       - name: Generate SHA256 checksums
         run: |
           cd artifacts
-          sha256sum rocq-bootstrap-windows/rocq-bootstrap.exe \
-                    rocq-bootstrap-macos/rocq-bootstrap.dmg \
-                    rocq-bootstrap-linux/rocq-bootstrap | tee SHA256SUMS.txt
+          sha256sum rocq-platform-starter-windows/rocq-platform-starter.exe \
+                    rocq-platform-starter-macos/rocq-platform-starter.dmg \
+                    rocq-platform-starter-linux/rocq-platform-starter | tee SHA256SUMS.txt
 
       - name: Extract manifest info
         id: manifest
@@ -201,9 +201,9 @@ jobs:
           fi
 
           # Checksums
-          WIN_SHA=$(sha256sum artifacts/rocq-bootstrap-windows/rocq-bootstrap.exe | awk '{print $1}')
-          MAC_SHA=$(sha256sum artifacts/rocq-bootstrap-macos/rocq-bootstrap.dmg | awk '{print $1}')
-          LIN_SHA=$(sha256sum artifacts/rocq-bootstrap-linux/rocq-bootstrap | awk '{print $1}')
+          WIN_SHA=$(sha256sum artifacts/rocq-platform-starter-windows/rocq-platform-starter.exe | awk '{print $1}')
+          MAC_SHA=$(sha256sum artifacts/rocq-platform-starter-macos/rocq-platform-starter.dmg | awk '{print $1}')
+          LIN_SHA=$(sha256sum artifacts/rocq-platform-starter-linux/rocq-platform-starter | awk '{print $1}')
 
           cat > /tmp/release-body.md << 'ENDOFHEADER'
           Cross-platform GUI installer for Rocq Platform.
@@ -216,16 +216,16 @@ jobs:
           ## Installation
 
           ### Windows
-          Download \`rocq-bootstrap-windows-x86_64.exe\` and run it.
+          Download \`rocq-platform-starter-windows-x86_64.exe\` and run it.
 
           ### macOS (Apple Silicon)
-          Download \`rocq-bootstrap-macos-arm64.dmg\`, open the DMG and drag the app to Applications.
+          Download \`rocq-platform-starter-macos-arm64.dmg\`, open the DMG and drag the app to Applications.
 
           ### Linux (x86_64)
           \`\`\`bash
-          chmod +x rocq-bootstrap-linux-x86_64
-          ./rocq-bootstrap-linux-x86_64              # run directly
-          ./rocq-bootstrap-linux-x86_64 --install    # install as desktop app
+          chmod +x rocq-platform-starter-linux-x86_64
+          ./rocq-platform-starter-linux-x86_64              # run directly
+          ./rocq-platform-starter-linux-x86_64 --install    # install as desktop app
           \`\`\`
 
           ## What's changed
@@ -237,9 +237,9 @@ jobs:
           ## SHA256 checksums
 
           \`\`\`
-          ${WIN_SHA}  rocq-bootstrap-windows-x86_64.exe
-          ${MAC_SHA}  rocq-bootstrap-macos-arm64.dmg
-          ${LIN_SHA}  rocq-bootstrap-linux-x86_64
+          ${WIN_SHA}  rocq-platform-starter-windows-x86_64.exe
+          ${MAC_SHA}  rocq-platform-starter-macos-arm64.dmg
+          ${LIN_SHA}  rocq-platform-starter-linux-x86_64
           \`\`\`
           ENDOFBODY
 
@@ -255,10 +255,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create ${{ inputs.tag }} \
-            --title "Rocq Bootstrap ${{ inputs.tag }}" \
+            --title "Rocq-Platform-Starter ${{ inputs.tag }}" \
             --draft \
             --notes-file /tmp/release-body.md \
-            artifacts/rocq-bootstrap-windows/rocq-bootstrap.exe#rocq-bootstrap-windows-x86_64.exe \
-            artifacts/rocq-bootstrap-macos/rocq-bootstrap.dmg#rocq-bootstrap-macos-arm64.dmg \
-            artifacts/rocq-bootstrap-linux/rocq-bootstrap#rocq-bootstrap-linux-x86_64 \
+            artifacts/rocq-platform-starter-windows/rocq-platform-starter.exe#rocq-platform-starter-windows-x86_64.exe \
+            artifacts/rocq-platform-starter-macos/rocq-platform-starter.dmg#rocq-platform-starter-macos-arm64.dmg \
+            artifacts/rocq-platform-starter-linux/rocq-platform-starter#rocq-platform-starter-linux-x86_64 \
             artifacts/SHA256SUMS.txt#SHA256SUMS.txt

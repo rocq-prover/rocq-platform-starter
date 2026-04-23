@@ -11,11 +11,11 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 
-	sharedinstaller "github.com/justme0606/rocq-bootstrap/shared/installer"
+	sharedinstaller "github.com/justme0606/rocq-platform-starter/shared/installer"
 
-	"github.com/justme0606/rocq-bootstrap/windows/internal/manifest"
-	"github.com/justme0606/rocq-bootstrap/windows/internal/vscode"
-	"github.com/justme0606/rocq-bootstrap/windows/internal/workspace"
+	"github.com/justme0606/rocq-platform-starter/windows/internal/manifest"
+	"github.com/justme0606/rocq-platform-starter/windows/internal/vscode"
+	"github.com/justme0606/rocq-platform-starter/windows/internal/workspace"
 )
 
 // Logger wraps the shared Logger type.
@@ -261,7 +261,7 @@ func Run(cfg *Config) (*Result, error) {
 		cfg.OnStep(2, "Skipped (already installed).", 1.0)
 		cfg.OnStep(3, "Skipped (already installed).", 1.0)
 	} else {
-		tempDir := filepath.Join(os.TempDir(), "rocq-bootstrap")
+		tempDir := filepath.Join(os.TempDir(), "rocq-platform-starter")
 
 		// Step 1: Download
 		cfg.OnStep(1, "Downloading Rocq Platform installer...", 0.0)

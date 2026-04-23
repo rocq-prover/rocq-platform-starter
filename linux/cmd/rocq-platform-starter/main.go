@@ -6,22 +6,22 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/justme0606/rocq-bootstrap/shared/startup"
+	"github.com/justme0606/rocq-platform-starter/shared/startup"
 
-	rootfs "github.com/justme0606/rocq-bootstrap/linux"
-	"github.com/justme0606/rocq-bootstrap/linux/internal/gui"
-	"github.com/justme0606/rocq-bootstrap/linux/internal/manifest"
+	rootfs "github.com/justme0606/rocq-platform-starter/linux"
+	"github.com/justme0606/rocq-platform-starter/linux/internal/gui"
+	"github.com/justme0606/rocq-platform-starter/linux/internal/manifest"
 )
 
 var Version = "dev"
 
 const (
-	binaryName  = "rocq-bootstrap"
+	binaryName  = "rocq-platform-starter"
 	desktopFile = `[Desktop Entry]
-Name=Rocq Bootstrap
-Comment=Rocq Platform Installer
-Exec=rocq-bootstrap
-Icon=rocq-bootstrap
+Name=Rocq-Platform-Starter
+Comment=Rocq Platform Starter
+Exec=rocq-platform-starter
+Icon=rocq-platform-starter
 Terminal=false
 Type=Application
 Categories=Development;Education;Science;
@@ -52,7 +52,7 @@ func main() {
 			}
 			return
 		case "--help", "-h":
-			fmt.Println("Usage: rocq-bootstrap [--install | --uninstall | --log | --help]")
+			fmt.Println("Usage: rocq-platform-starter [--install | --uninstall | --log | --help]")
 			fmt.Println()
 			fmt.Println("  (no args)     Launch the GUI installer")
 			fmt.Println("  --install     Install as desktop application (~/.local)")
@@ -106,21 +106,21 @@ func installDesktop() error {
 	fmt.Printf("Installed binary:  %s\n", destBin)
 
 	// Write embedded icon
-	destIcon := filepath.Join(iconDir, "rocq-bootstrap.png")
+	destIcon := filepath.Join(iconDir, "rocq-platform-starter.png")
 	if err := os.WriteFile(destIcon, rootfs.EmbeddedIcon, 0o644); err != nil {
 		return fmt.Errorf("write icon: %w", err)
 	}
 	fmt.Printf("Installed icon:    %s\n", destIcon)
 
 	// Write .desktop file
-	destDesktop := filepath.Join(desktopDir, "rocq-bootstrap.desktop")
+	destDesktop := filepath.Join(desktopDir, "rocq-platform-starter.desktop")
 	if err := os.WriteFile(destDesktop, []byte(desktopFile), 0o644); err != nil {
 		return fmt.Errorf("write desktop file: %w", err)
 	}
 	fmt.Printf("Installed desktop: %s\n", destDesktop)
 
 	fmt.Println()
-	fmt.Println("Rocq Bootstrap installed as desktop application.")
+	fmt.Println("Rocq-Platform-Starter installed as desktop application.")
 	fmt.Printf("Make sure %s is in your PATH.\n", binDir)
 	return nil
 }
@@ -133,8 +133,8 @@ func uninstallDesktop() error {
 
 	files := []string{
 		filepath.Join(home, ".local", "bin", binaryName),
-		filepath.Join(home, ".local", "share", "icons", "hicolor", "256x256", "apps", "rocq-bootstrap.png"),
-		filepath.Join(home, ".local", "share", "applications", "rocq-bootstrap.desktop"),
+		filepath.Join(home, ".local", "share", "icons", "hicolor", "256x256", "apps", "rocq-platform-starter.png"),
+		filepath.Join(home, ".local", "share", "applications", "rocq-platform-starter.desktop"),
 	}
 
 	for _, f := range files {
@@ -145,7 +145,7 @@ func uninstallDesktop() error {
 		}
 	}
 
-	fmt.Println("Rocq Bootstrap uninstalled.")
+	fmt.Println("Rocq-Platform-Starter uninstalled.")
 	return nil
 }
 

@@ -10,7 +10,7 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 
-	"github.com/justme0606/rocq-bootstrap/windows/internal/vscode"
+	"github.com/justme0606/rocq-platform-starter/windows/internal/vscode"
 )
 
 // Run performs system diagnostics and reports findings via onLog callback.

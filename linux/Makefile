@@ -1,6 +1,6 @@
-BINARY      = rocq-bootstrap
+BINARY      = rocq-platform-starter
 GO          = go
-SRC_DIR     = ./cmd/rocq-bootstrap
+SRC_DIR     = ./cmd/rocq-platform-starter
 
 # Paths to source assets (relative to repo root)
 REPO_ROOT   = ..
@@ -34,8 +34,8 @@ $(BINARY): sync-assets
 install: $(BINARY)
 	install -d $(BIN_DIR) $(ICON_DIR) $(DESKTOP_DIR)
 	install -m 755 $(BINARY) $(BIN_DIR)/$(BINARY)
-	install -m 644 embedded/icon/rocq-icon.png $(ICON_DIR)/rocq-bootstrap.png
-	install -m 644 rocq-bootstrap.desktop $(DESKTOP_DIR)/rocq-bootstrap.desktop
+	install -m 644 embedded/icon/rocq-icon.png $(ICON_DIR)/rocq-platform-starter.png
+	install -m 644 rocq-platform-starter.desktop $(DESKTOP_DIR)/rocq-platform-starter.desktop
 	@echo "Installed to $(PREFIX). Make sure $(BIN_DIR) is in your PATH."
 	@# Update desktop database if available
 	@command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database $(DESKTOP_DIR) 2>/dev/null || true
@@ -43,8 +43,8 @@ install: $(BINARY)
 
 uninstall:
 	rm -f $(BIN_DIR)/$(BINARY)
-	rm -f $(ICON_DIR)/rocq-bootstrap.png
-	rm -f $(DESKTOP_DIR)/rocq-bootstrap.desktop
+	rm -f $(ICON_DIR)/rocq-platform-starter.png
+	rm -f $(DESKTOP_DIR)/rocq-platform-starter.desktop
 	@command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database $(DESKTOP_DIR) 2>/dev/null || true
 	@echo "Uninstalled from $(PREFIX)."
 

@@ -1,7 +1,7 @@
 package installer
 
 import (
-	sharedinstaller "github.com/justme0606/rocq-bootstrap/shared/installer"
+	sharedinstaller "github.com/justme0606/rocq-platform-starter/shared/installer"
 )
 
 // ProgressFunc is called with bytes downloaded and total size (-1 if unknown).

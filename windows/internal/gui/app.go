@@ -5,12 +5,12 @@ import (
 	"io/fs"
 	"time"
 
-	sharedgui "github.com/justme0606/rocq-bootstrap/shared/gui"
+	sharedgui "github.com/justme0606/rocq-platform-starter/shared/gui"
 
-	"github.com/justme0606/rocq-bootstrap/windows/internal/doctor"
-	"github.com/justme0606/rocq-bootstrap/windows/internal/installer"
-	"github.com/justme0606/rocq-bootstrap/windows/internal/manifest"
-	"github.com/justme0606/rocq-bootstrap/windows/internal/releases"
+	"github.com/justme0606/rocq-platform-starter/windows/internal/doctor"
+	"github.com/justme0606/rocq-platform-starter/windows/internal/installer"
+	"github.com/justme0606/rocq-platform-starter/windows/internal/manifest"
+	"github.com/justme0606/rocq-platform-starter/windows/internal/releases"
 )
 
 const totalSteps = 7

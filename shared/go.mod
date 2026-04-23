@@ -1,4 +1,4 @@
-module github.com/justme0606/rocq-bootstrap/shared
+module github.com/justme0606/rocq-platform-starter/shared
 
 go 1.22
 

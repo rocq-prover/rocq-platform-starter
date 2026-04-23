@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
-# rocq-bootstrap
+# rocq-platform-starter
 # Reproducible and version-pinned Rocq environment bootstrapper.
 #
 # Copyright (c) 2026 Sylvain Borgogno
 # Licensed under the MIT License.
 #
-# https://github.com/justme0606/rocq-bootstrap
+# https://github.com/justme0606/rocq-platform-starter
 #
 
 set -euo pipefail

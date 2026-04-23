@@ -91,8 +91,8 @@ jobs:
       - name: Verify ELF binary
         working-directory: linux
         run: |
-          file rocq-bootstrap | grep -q "ELF 64-bit LSB"
-          SIZE=$(stat -c%s rocq-bootstrap)
+          file rocq-platform-starter | grep -q "ELF 64-bit LSB"
+          SIZE=$(stat -c%s rocq-platform-starter)
           echo "Binary size: $SIZE bytes"
           if [ "$SIZE" -lt 1000000 ]; then
             echo "Binary seems too small"
@@ -102,7 +102,7 @@ jobs:
       - name: Test --help
         working-directory: linux
         run: |
-          OUTPUT=$(./rocq-bootstrap --help)
+          OUTPUT=$(./rocq-platform-starter --help)
           echo "$OUTPUT"
           echo "$OUTPUT" | grep -q "\-\-install"
           echo "$OUTPUT" | grep -q "\-\-uninstall"
@@ -110,17 +110,17 @@ jobs:
       - name: Test --install / --uninstall
         working-directory: linux
         run: |
-          ./rocq-bootstrap --install
-          test -f "$HOME/.local/bin/rocq-bootstrap"
-          test -f "$HOME/.local/share/icons/hicolor/256x256/apps/rocq-bootstrap.png"
-          test -f "$HOME/.local/share/applications/rocq-bootstrap.desktop"
-          "$HOME/.local/bin/rocq-bootstrap" --help | grep -q "Launch the GUI"
+          ./rocq-platform-starter --install
+          test -f "$HOME/.local/bin/rocq-platform-starter"
+          test -f "$HOME/.local/share/icons/hicolor/256x256/apps/rocq-platform-starter.png"
+          test -f "$HOME/.local/share/applications/rocq-platform-starter.desktop"
+          "$HOME/.local/bin/rocq-platform-starter" --help | grep -q "Launch the GUI"
           echo "Install OK"
 
-          ./rocq-bootstrap --uninstall
-          test ! -f "$HOME/.local/bin/rocq-bootstrap"
-          test ! -f "$HOME/.local/share/icons/hicolor/256x256/apps/rocq-bootstrap.png"
-          test ! -f "$HOME/.local/share/applications/rocq-bootstrap.desktop"
+          ./rocq-platform-starter --uninstall
+          test ! -f "$HOME/.local/bin/rocq-platform-starter"
+          test ! -f "$HOME/.local/share/icons/hicolor/256x256/apps/rocq-platform-starter.png"
+          test ! -f "$HOME/.local/share/applications/rocq-platform-starter.desktop"
           echo "Uninstall OK"
 
       - name: Test embedded assets
@@ -136,7 +136,7 @@ jobs:
         timeout-minutes: 1
         continue-on-error: true
         run: |
-          ./rocq-bootstrap &
+          ./rocq-platform-starter &
           PID=$!
           sleep 3
           if kill -0 $PID 2>/dev/null; then
@@ -151,8 +151,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rocq-bootstrap-linux
-          path: linux/rocq-bootstrap
+          name: rocq-platform-starter-linux
+          path: linux/rocq-platform-starter
 
   # ──────────────────────────────────────────────
   # Windows GUI
@@ -182,8 +182,8 @@ jobs:
       - name: Verify PE32+ executable
         working-directory: windows
         run: |
-          file rocq-bootstrap.exe | grep -q "PE32+ executable (GUI) x86-64"
-          SIZE=$(stat -c%s rocq-bootstrap.exe)
+          file rocq-platform-starter.exe | grep -q "PE32+ executable (GUI) x86-64"
+          SIZE=$(stat -c%s rocq-platform-starter.exe)
           echo "Exe size: $SIZE bytes"
           if [ "$SIZE" -lt 1000000 ]; then
             echo "Exe seems too small"
@@ -201,8 +201,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rocq-bootstrap-windows
-          path: windows/rocq-bootstrap.exe
+          name: rocq-platform-starter-windows
+          path: windows/rocq-platform-starter.exe
 
   windows-native:
     name: Windows (native build + smoke test)
@@ -227,20 +227,20 @@ jobs:
       - name: Build natively
         shell: bash
         working-directory: windows
-        run: go build -ldflags="-H windowsgui -s -w" -o rocq-bootstrap.exe ./cmd/rocq-bootstrap/
+        run: go build -ldflags="-H windowsgui -s -w" -o rocq-platform-starter.exe ./cmd/rocq-platform-starter/
 
       - name: Verify output
         shell: pwsh
         run: |
-          if (!(Test-Path "windows\rocq-bootstrap.exe")) { throw "Build failed" }
-          $size = (Get-Item "windows\rocq-bootstrap.exe").Length
+          if (!(Test-Path "windows\rocq-platform-starter.exe")) { throw "Build failed" }
+          $size = (Get-Item "windows\rocq-platform-starter.exe").Length
           Write-Host "Native build succeeded: $size bytes"
           if ($size -lt 1MB) { throw "exe too small ($size bytes)" }
 
       - name: Download cross-compiled artifact
         uses: actions/download-artifact@v4
         with:
-          name: rocq-bootstrap-windows
+          name: rocq-platform-starter-windows
           path: cross/
 
       - name: Smoke test — cross-compiled exe
@@ -248,7 +248,7 @@ jobs:
         timeout-minutes: 1
         continue-on-error: true
         run: |
-          $proc = Start-Process -FilePath "cross\rocq-bootstrap.exe" -PassThru -NoNewWindow
+          $proc = Start-Process -FilePath "cross\rocq-platform-starter.exe" -PassThru -NoNewWindow
           Start-Sleep -Seconds 5
           if (!$proc.HasExited) {
             Write-Host "Process running (PID: $($proc.Id)), stopping."
@@ -282,20 +282,20 @@ jobs:
 
       - name: Verify Mach-O binary
         working-directory: macos
-        run: file rocq-bootstrap | grep -q "Mach-O"
+        run: file rocq-platform-starter | grep -q "Mach-O"
 
       - name: Verify app bundle
         working-directory: macos
         run: |
-          test -d "Rocq Bootstrap.app/Contents/MacOS"
-          test -f "Rocq Bootstrap.app/Contents/MacOS/rocq-bootstrap"
-          test -f "Rocq Bootstrap.app/Contents/Info.plist"
+          test -d "Rocq-Platform-Starter.app/Contents/MacOS"
+          test -f "Rocq-Platform-Starter.app/Contents/MacOS/rocq-platform-starter"
+          test -f "Rocq-Platform-Starter.app/Contents/Info.plist"
 
       - name: Verify DMG
         working-directory: macos
         run: |
-          test -f rocq-bootstrap.dmg
-          SIZE=$(stat -f%z rocq-bootstrap.dmg)
+          test -f rocq-platform-starter.dmg
+          SIZE=$(stat -f%z rocq-platform-starter.dmg)
           echo "DMG size: $SIZE bytes"
           if [ "$SIZE" -lt 1000000 ]; then
             echo "DMG seems too small"
@@ -313,10 +313,10 @@ jobs:
       - name: Smoke test — mount DMG and verify contents
         working-directory: macos
         run: |
-          MOUNT_POINT=$(hdiutil attach rocq-bootstrap.dmg -nobrowse | awk '/Volumes\// {for(i=3;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ *$//')
+          MOUNT_POINT=$(hdiutil attach rocq-platform-starter.dmg -nobrowse | awk '/Volumes\// {for(i=3;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ *$//')
           echo "Mounted at: $MOUNT_POINT"
-          test -d "$MOUNT_POINT/Rocq Bootstrap.app"
-          test -f "$MOUNT_POINT/Rocq Bootstrap.app/Contents/MacOS/rocq-bootstrap"
+          test -d "$MOUNT_POINT/Rocq-Platform-Starter.app"
+          test -f "$MOUNT_POINT/Rocq-Platform-Starter.app/Contents/MacOS/rocq-platform-starter"
           echo "DMG contents OK"
           hdiutil detach "$MOUNT_POINT" || true
 
@@ -325,7 +325,7 @@ jobs:
         timeout-minutes: 1
         continue-on-error: true
         run: |
-          ./rocq-bootstrap &
+          ./rocq-platform-starter &
           PID=$!
           sleep 3
           if kill -0 $PID 2>/dev/null; then
@@ -340,5 +340,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rocq-bootstrap-macos
-          path: macos/rocq-bootstrap.dmg
+          name: rocq-platform-starter-macos
+          path: macos/rocq-platform-starter.dmg

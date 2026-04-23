@@ -1,7 +1,7 @@
 package installer
 
 import (
-	sharedinstaller "github.com/justme0606/rocq-bootstrap/shared/installer"
+	sharedinstaller "github.com/justme0606/rocq-platform-starter/shared/installer"
 )
 
 // VerifySHA256 checks the SHA256 hash of the file at path.

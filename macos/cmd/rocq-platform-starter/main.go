@@ -3,11 +3,11 @@ package main
 import (
 	"os"
 
-	"github.com/justme0606/rocq-bootstrap/shared/startup"
+	"github.com/justme0606/rocq-platform-starter/shared/startup"
 
-	rootfs "github.com/justme0606/rocq-bootstrap/macos"
-	"github.com/justme0606/rocq-bootstrap/macos/internal/gui"
-	"github.com/justme0606/rocq-bootstrap/macos/internal/manifest"
+	rootfs "github.com/justme0606/rocq-platform-starter/macos"
+	"github.com/justme0606/rocq-platform-starter/macos/internal/gui"
+	"github.com/justme0606/rocq-platform-starter/macos/internal/manifest"
 )
 
 var Version = "dev"

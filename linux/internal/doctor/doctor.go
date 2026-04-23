@@ -1,14 +1,16 @@
 package doctor
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
-	"github.com/justme0606/rocq-bootstrap/linux/internal/vscode"
+	"github.com/justme0606/rocq-platform-starter/linux/internal/vscode"
 )
 
 // Run performs system diagnostics and reports findings via onLog callback.
@@ -137,8 +139,15 @@ func checkBinaries(onLog func(string)) {
 			onLog(fmt.Sprintf("  %s \u2192 %s", name, p))
 			anyFound = true
 
-			// Try to get version
-			out, err := exec.Command(p, "--print-version").Output()
+			// Skip version check for vsrocqtop (LSP server, hangs on --print-version)
+			if name == "vsrocqtop" {
+				continue
+			}
+
+			// Try to get version with a timeout
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			out, err := exec.CommandContext(ctx, p, "--print-version").Output()
+			cancel()
 			if err == nil {
 				ver := strings.TrimSpace(string(out))
 				if ver != "" {

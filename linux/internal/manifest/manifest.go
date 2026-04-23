@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 
-	sharedmanifest "github.com/justme0606/rocq-bootstrap/shared/manifest"
+	sharedmanifest "github.com/justme0606/rocq-platform-starter/shared/manifest"
 )
 
 type OpamPackage struct {
