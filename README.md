@@ -193,9 +193,3 @@ Ensures:
 ## License
 
 MIT License
-
----
-
-## Repository
-
-https://github.com/justme0606/rocq-platform-starter
