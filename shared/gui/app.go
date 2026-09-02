@@ -70,6 +70,21 @@ func (ctx *InstallContext) OnStep(step int, label string, fraction float64) {
 	}
 }
 
+// DockerVariant represents a Docker image variant the user can choose.
+type DockerVariant struct {
+	Name        string // "ide", "extended", "full"
+	Description string // human-readable description
+}
+
+// DockerInstallConfig holds the configuration for the Docker installation mode.
+type DockerInstallConfig struct {
+	StepCount      int
+	StepNames      []string
+	Variants       []DockerVariant
+	DefaultVariant string
+	RunInstall     func(ctx *InstallContext, variant string)
+}
+
 // AppConfig holds all the platform-specific callbacks and configuration
 // needed to run the shared GUI.
 type AppConfig struct {
@@ -99,6 +114,9 @@ type AppConfig struct {
 
 	// Install execution
 	RunInstall func(ctx *InstallContext, existingSelection string, skipInstall bool)
+
+	// Docker installation (if non-nil, show Docker button)
+	DockerInstall *DockerInstallConfig
 
 	// ShowLog controls whether the log panel is visible (use --log flag)
 	ShowLog bool
@@ -282,8 +300,8 @@ func Run(cfg *AppConfig) {
 		progressStack,
 	)
 
-	// --- Step checklist (hidden until install starts) ---
-	checklist := NewStepChecklist(cfg.StepNames)
+	// --- Step checklist (dynamic: replaced when Install or Docker starts) ---
+	checklistWrapper := container.NewVBox()
 
 	// --- Log panel layout ---
 	logScroll := container.NewScroll(logP.Display)
@@ -303,10 +321,23 @@ func Run(cfg *AppConfig) {
 	// --- Install button ---
 	installing := false
 	var installBtn *widget.Button
-	installBtn = widget.NewButtonWithIcon("Install", theme.DownloadIcon(), func() {
+	var dockerBtn *widget.Button
+
+	disableAllActions := func() {
 		installing = true
 		installBtn.Disable()
 		releaseSelect.Disable()
+		if dockerBtn != nil {
+			dockerBtn.Disable()
+		}
+	}
+
+	installBtn = widget.NewButtonWithIcon("Install", theme.DownloadIcon(), func() {
+		disableAllActions()
+
+		checklist := NewStepChecklist(cfg.StepNames)
+		checklistWrapper.RemoveAll()
+		checklistWrapper.Add(checklist.Container)
 
 		ctx := &InstallContext{
 			Window:      w,
@@ -345,8 +376,12 @@ func Run(cfg *AppConfig) {
 
 			closeBtn.OnTapped = func() {
 				d.Hide()
+				installing = false
 				installBtn.Enable()
 				releaseSelect.Enable()
+				if dockerBtn != nil {
+					dockerBtn.Enable()
+				}
 			}
 			confirmBtn.OnTapped = func() {
 				d.Hide()
@@ -368,11 +403,92 @@ func Run(cfg *AppConfig) {
 	})
 	installBtn.Importance = widget.HighImportance
 
+	// --- Docker button (conditional) ---
+	if cfg.DockerInstall != nil {
+		dc := cfg.DockerInstall
+		dockerBtn = widget.NewButtonWithIcon("Docker", theme.ComputerIcon(), func() {
+			disableAllActions()
+
+			// Build radio options from variants
+			var options []string
+			for _, v := range dc.Variants {
+				options = append(options, fmt.Sprintf("%s — %s", v.Name, v.Description))
+			}
+
+			radio := widget.NewRadioGroup(options, nil)
+			// Pre-select the default variant
+			for _, opt := range options {
+				if strings.HasPrefix(opt, dc.DefaultVariant+" ") {
+					radio.SetSelected(opt)
+					break
+				}
+			}
+
+			msg := widget.NewLabel("Select the Docker image variant to install:")
+			msg.Wrapping = fyne.TextWrapWord
+
+			closeBtn := widget.NewButton("Close", nil)
+			closeBtn.Importance = widget.HighImportance
+			confirmBtn := widget.NewButton("Continue", nil)
+			confirmBtn.Importance = widget.HighImportance
+
+			buttons := container.NewHBox(layout.NewSpacer(), closeBtn, confirmBtn)
+			content := container.NewVBox(msg, radio, buttons)
+			d := dialog.NewCustomWithoutButtons("Select Docker Image", content, w)
+
+			closeBtn.OnTapped = func() {
+				d.Hide()
+				installing = false
+				installBtn.Enable()
+				releaseSelect.Enable()
+				if dockerBtn != nil {
+					dockerBtn.Enable()
+				}
+			}
+			confirmBtn.OnTapped = func() {
+				d.Hide()
+
+				// Extract variant name (before the " — ")
+				selected := radio.Selected
+				variantName := dc.DefaultVariant
+				if idx := strings.Index(selected, " — "); idx >= 0 {
+					variantName = selected[:idx]
+				}
+
+				checklist := NewStepChecklist(dc.StepNames)
+				checklistWrapper.RemoveAll()
+				checklistWrapper.Add(checklist.Container)
+
+				ctx := &InstallContext{
+					Window:      w,
+					StatusLabel: statusLabel,
+					ProgressBar: progressBar,
+					InfiniteBar: infiniteBar,
+					StepLabel:   stepLabel,
+					InstallBtn:  installBtn,
+					LogPanel:    logP,
+					Checklist:   checklist,
+					TotalSteps:  dc.StepCount,
+					StepNames:   dc.StepNames,
+				}
+
+				logP.Append(fmt.Sprintf("Starting Docker installation (variant: %s)...", variantName))
+				go dc.RunInstall(ctx, variantName)
+			}
+
+			d.Show()
+		})
+		dockerBtn.Importance = widget.HighImportance
+	}
+
 	// --- Doctor button ---
 	var doctorBtn *widget.Button
 	doctorBtn = widget.NewButtonWithIcon("Doctor", theme.InfoIcon(), func() {
 		installBtn.Disable()
 		doctorBtn.Disable()
+		if dockerBtn != nil {
+			dockerBtn.Disable()
+		}
 		statusLabel.SetText("Running diagnostics...")
 		progressBar.Hide()
 		infiniteBar.Show()
@@ -408,6 +524,9 @@ func Run(cfg *AppConfig) {
 
 			if !installing {
 				installBtn.Enable()
+				if dockerBtn != nil {
+					dockerBtn.Enable()
+				}
 			}
 			doctorBtn.Enable()
 		}()
@@ -417,9 +536,16 @@ func Run(cfg *AppConfig) {
 	versionLabel := widget.NewLabelWithStyle(cfg.Version, fyne.TextAlignTrailing, fyne.TextStyle{})
 	versionLabel.Importance = widget.LowImportance
 
+	var actionButtons *fyne.Container
+	if dockerBtn != nil {
+		actionButtons = container.NewHBox(doctorBtn, installBtn, dockerBtn)
+	} else {
+		actionButtons = container.NewHBox(doctorBtn, installBtn)
+	}
+
 	bottomBar := container.NewPadded(
 		container.NewBorder(nil, nil, nil, versionLabel,
-			container.NewCenter(container.NewHBox(doctorBtn, installBtn)),
+			container.NewCenter(actionButtons),
 		),
 	)
 
@@ -435,7 +561,7 @@ func Run(cfg *AppConfig) {
 			bottomBar,
 			nil, nil,
 			container.NewVBox(
-				checklist.Container,
+				checklistWrapper,
 				logSection,
 				layout.NewSpacer(),
 			),

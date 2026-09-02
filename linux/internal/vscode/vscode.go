@@ -27,6 +27,11 @@ func OpenWorkspace(codeBin, workspaceDir string) error {
 	return sharedvscode.OpenWorkspace(codeBin, workspaceDir)
 }
 
+// OpenWorkspaceWithDisabledExtensions opens VSCode with specified extensions disabled.
+func OpenWorkspaceWithDisabledExtensions(codeBin, workspaceDir string, extensionIDs []string) error {
+	return sharedvscode.OpenWorkspaceWithDisabledExtensions(codeBin, workspaceDir, extensionIDs)
+}
+
 // FindCode searches for the VSCode CLI executable.
 func FindCode() (string, error) {
 	// Try PATH first

@@ -21,6 +21,7 @@ TAG=""
 OUT="$REPO_ROOT/manifest/latest.json"
 CHANNEL="stable"
 COMPUTE_SHA256=0
+DOCKER_TAG=""
 
 usage() {
   cat <<EOF
@@ -36,6 +37,7 @@ Options:
   --out <path>           Output manifest file (default: manifest/latest.json)
   --channel <name>       Channel name (default: stable)
   --compute-sha256       Download assets and compute sha256 hashes
+  --docker-tag <TAG>     Add docker section with this image tag (e.g. 2026.01)
   -h, --help             Show this help message
 
 Examples:
@@ -45,6 +47,9 @@ Examples:
 
   # Generate manifest and compute sha256
   $0 --tag 2025.08.1 --compute-sha256
+
+  # Generate manifest with docker support
+  $0 --tag 2025.08.1 --docker-tag 2026.01
 
   # Custom output file
   $0 --tag 2025.08.1 --out manifest/2025.08.1.json
@@ -118,6 +123,7 @@ while [[ $# -gt 0 ]]; do
     --out) OUT="${2:-}"; shift 2 ;;
     --channel) CHANNEL="${2:-}"; shift 2 ;;
     --compute-sha256) COMPUTE_SHA256=1; shift ;;
+    --docker-tag) DOCKER_TAG="${2:-}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown argument: $1" >&2; usage; exit 1 ;;
   esac
@@ -225,6 +231,26 @@ while IFS=$'\t' read -r name url; do
     '.assets[$os][$arch] = {type: $type, url: $url, sha256: $sha}'
   )"
 done < <(echo "$assets" | jq -r '.[] | [.name, .url] | @tsv')
+
+# Inject docker section if requested
+if [[ -n "$DOCKER_TAG" ]]; then
+  manifest="$(echo "$manifest" | jq \
+    --arg tag "$DOCKER_TAG" \
+    '.docker = {
+      registry: "ghcr.io/rocq-prover",
+      tag: $tag,
+      user: "rocq",
+      opam_switch: "4.14.2+flambda",
+      vsrocqtop_path: "/home/rocq/.opam/4.14.2+flambda/bin/vsrocqtop",
+      variants: {
+        ide:      { image: "rocq-platform_ide",      description: "Rocq + RocqIDE + vsrocq language server (recommended)" },
+        extended: { image: "rocq-platform_extended",  description: "IDE + extra libraries" },
+        full:     { image: "rocq-platform_full",      description: "Full Rocq Platform" }
+      },
+      default_variant: "ide"
+    }'
+  )"
+fi
 
 # Write out
 echo "$manifest" | jq '.' > "$OUT"

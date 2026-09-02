@@ -57,3 +57,16 @@ func OpenWorkspace(codeBin, workspaceDir string) error {
 	cmd := exec.Command(codeBin, workspaceDir)
 	return cmd.Start()
 }
+
+// OpenWorkspaceWithDisabledExtensions opens VSCode with specified extensions
+// disabled. Used by the Docker flow to prevent vsrocq from starting on the
+// host (it will be properly installed inside the container by devcontainer.json).
+func OpenWorkspaceWithDisabledExtensions(codeBin, workspaceDir string, extensionIDs []string) error {
+	args := []string{}
+	for _, id := range extensionIDs {
+		args = append(args, "--disable-extension", id)
+	}
+	args = append(args, workspaceDir)
+	cmd := exec.Command(codeBin, args...)
+	return cmd.Start()
+}
