@@ -95,12 +95,20 @@ func ParseVersion(tag string) []int {
 	return nums
 }
 
-// VersionRe matches Rocq/Coq version strings in release bodies.
-var VersionRe = regexp.MustCompile(`\*\*(?:Rocq|Coq)\s+(\d+\.\d+\.\d+)\*\*`)
+// versionBoldRe matches bold Rocq/Coq version strings: **Rocq 9.0.1**
+var versionBoldRe = regexp.MustCompile(`\*\*(?:Rocq|Coq)\s+(\d+\.\d+\.\d+)\*\*`)
+
+// versionPlainRe matches plain Rocq/Coq version strings: Rocq 9.1.0
+var versionPlainRe = regexp.MustCompile(`(?:Rocq|Coq)\s+(\d+\.\d+\.\d+)`)
 
 // InferRocqVersion extracts the Rocq/Coq version from a release body text.
+// It first tries bold markdown patterns (**Rocq X.Y.Z**), then falls back
+// to plain text matches (Rocq X.Y.Z).
 func InferRocqVersion(body string) string {
-	if m := VersionRe.FindStringSubmatch(body); m != nil {
+	if m := versionBoldRe.FindStringSubmatch(body); m != nil {
+		return m[1]
+	}
+	if m := versionPlainRe.FindStringSubmatch(body); m != nil {
 		return m[1]
 	}
 	return ""

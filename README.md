@@ -160,6 +160,40 @@ No manual configuration is required.
 
 ---
 
+## Docker / Dev Container mode (Linux)
+
+As an alternative to a local opam installation, the application offers a **Docker** mode that uses pre-built Rocq Platform images from GHCR. This is useful when you want an isolated environment without installing opam or system dependencies on the host.
+
+### How it works
+
+1. Click **Docker** in the application
+2. Select a Docker image variant (ide, extended, or full)
+3. The application pulls the image, creates a workspace at `~/rocq-workspace/`, and generates a `.devcontainer/devcontainer.json`
+4. VSCode opens the workspace folder
+
+### Reopen in Container
+
+When VSCode opens, you will see a prompt **"Reopen in Container"** (or click the green/blue icon in the bottom-left corner). Click it to:
+
+- Start a Docker container from the selected Rocq Platform image
+- Bind-mount `~/rocq-workspace/` into the container at `/home/rocq/workspace`
+- Install the vsrocq extension inside the container with the correct `vsrocqtop` path
+- Run `rocq --version` as a post-create validation
+
+Once inside the container, the workspace files (`test.v`, `main.v`, `_RocqProject`) are shared between the host and the container. Any changes made on either side are immediately visible on the other.
+
+### Requirements
+
+- Docker (daemon must be running)
+- VSCode with the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension (installed automatically by the application)
+
+### Troubleshooting
+
+- **Files missing after reopening**: if you deleted and recreated `~/rocq-workspace/` while the container was running, the bind mount becomes stale. Use **Dev Containers: Rebuild Container** from the VSCode command palette to fix it.
+- **vsrocq errors on the host**: these can appear if the vsrocq extension is installed globally on your machine. They are harmless and disappear once you reopen in the container. The application disables vsrocq on the host when opening VSCode in Docker mode.
+
+---
+
 ## Supported Platforms
 
 Linux, macOS, Windows

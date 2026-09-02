@@ -27,6 +27,21 @@ type Asset struct {
 	Opam OpamConfig `json:"opam"`
 }
 
+type DockerVariant struct {
+	Image       string `json:"image"`
+	Description string `json:"description"`
+}
+
+type DockerConfig struct {
+	Registry       string                   `json:"registry"`
+	Tag            string                   `json:"tag"`
+	User           string                   `json:"user"`
+	OpamSwitch     string                   `json:"opam_switch"`
+	VsrocqtopPath  string                   `json:"vsrocqtop_path"`
+	Variants       map[string]DockerVariant  `json:"variants"`
+	DefaultVariant string                   `json:"default_variant"`
+}
+
 type Assets struct {
 	Linux struct {
 		X86_64 Asset `json:"x86_64"`
@@ -34,10 +49,11 @@ type Assets struct {
 }
 
 type Manifest struct {
-	Channel         string `json:"channel"`
-	RocqVersion     string `json:"rocq_version"`
-	PlatformRelease string `json:"platform_release"`
-	Assets          Assets `json:"assets"`
+	Channel         string        `json:"channel"`
+	RocqVersion     string        `json:"rocq_version"`
+	PlatformRelease string        `json:"platform_release"`
+	Assets          Assets        `json:"assets"`
+	Docker          *DockerConfig `json:"docker,omitempty"`
 }
 
 // Parse parses a manifest from raw JSON bytes.

@@ -35,8 +35,12 @@ func Run(onLog func(string)) {
 	checkWorkspace(onLog)
 
 	onLog("")
+	onLog("=== Docker ===")
+	dockerFound := checkDocker(onLog)
+
+	onLog("")
 	onLog("=== Potential Issues ===")
-	checkIssues(onLog, opamFound, installFound, vsrocqFound, vscoqFound)
+	checkIssues(onLog, opamFound, installFound, vsrocqFound, vscoqFound, dockerFound)
 }
 
 func checkOpam(onLog func(string)) bool {
@@ -245,7 +249,34 @@ func checkWorkspace(onLog func(string)) {
 	}
 }
 
-func checkIssues(onLog func(string), opamFound, installFound, vsrocqFound, vscoqFound bool) {
+func checkDocker(onLog func(string)) bool {
+	path, err := exec.LookPath("docker")
+	if err != nil {
+		onLog("  ⚠ docker not found in PATH")
+		return false
+	}
+	onLog(fmt.Sprintf("  ✓ docker: %s", path))
+
+	out, err := exec.Command("docker", "--version").Output()
+	if err == nil {
+		ver := strings.TrimSpace(string(out))
+		onLog(fmt.Sprintf("  Version: %s", ver))
+	}
+
+	// Check if daemon is running
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	_, err = exec.CommandContext(ctx, "docker", "info").CombinedOutput()
+	cancel()
+	if err != nil {
+		onLog("  ⚠ Docker daemon is not running")
+	} else {
+		onLog("  ✓ Docker daemon is running")
+	}
+
+	return true
+}
+
+func checkIssues(onLog func(string), opamFound, installFound, vsrocqFound, vscoqFound, dockerFound bool) {
 	anyIssue := false
 
 	if !opamFound {
