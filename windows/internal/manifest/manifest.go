@@ -8,11 +8,8 @@ import (
 	sharedmanifest "github.com/rocq-prover/rocq-platform-starter/shared/manifest"
 )
 
-type Asset struct {
-	Type   string `json:"type"`
-	URL    string `json:"url"`
-	SHA256 string `json:"sha256"`
-}
+// Asset is the signed .exe downloaded on Windows.
+type Asset = sharedmanifest.DownloadAsset
 
 type Assets struct {
 	Windows struct {
@@ -20,11 +17,11 @@ type Assets struct {
 	} `json:"windows"`
 }
 
+// Manifest is the Windows view of manifest/latest.json. Base is embedded, so
+// Channel, RocqVersion, PlatformRelease and Docker are promoted.
 type Manifest struct {
-	Channel         string `json:"channel"`
-	RocqVersion     string `json:"rocq_version"`
-	PlatformRelease string `json:"platform_release"`
-	Assets          Assets `json:"assets"`
+	sharedmanifest.Base
+	Assets Assets `json:"assets"`
 }
 
 // Parse parses a manifest from raw JSON bytes.
@@ -34,11 +31,16 @@ func Parse(data []byte) (*Manifest, error) {
 		return nil, fmt.Errorf("parse manifest: %w", err)
 	}
 
-	if m.Assets.Windows.X86_64.URL == "" {
-		return nil, fmt.Errorf("manifest: no Windows x86_64 asset URL")
+	if err := sharedmanifest.RequireURL(m.Assets.Windows.X86_64, "Windows x86_64"); err != nil {
+		return nil, err
 	}
 
 	return &m, nil
+}
+
+// NewBase builds the common manifest fields for a runtime-assembled manifest.
+func NewBase(rocqVersion, platformRelease string) sharedmanifest.Base {
+	return sharedmanifest.NewBase(rocqVersion, platformRelease)
 }
 
 // Load reads and parses the manifest from an embedded filesystem.
