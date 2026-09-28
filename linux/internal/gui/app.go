@@ -24,7 +24,7 @@ func Run(m *manifest.Manifest, templates fs.FS, icon []byte, version string, sho
 		Version:    version,
 		TotalSteps: totalSteps,
 		StepNames: []string{
-			"Check/install opam",
+			"Check opam",
 			"Initialize opam",
 			"Create opam switch",
 			"Configure repository",
