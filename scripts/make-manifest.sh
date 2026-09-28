@@ -6,7 +6,7 @@
 # Copyright (c) 2026 Sylvain Borgogno
 # Licensed under the MIT License.
 #
-# https://github.com/justme0606/rocq-platform-starter
+# https://github.com/rocq-prover/rocq-platform-starter
 #
 
 set -euo pipefail
