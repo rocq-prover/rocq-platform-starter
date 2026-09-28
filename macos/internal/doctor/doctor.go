@@ -1,15 +1,26 @@
 package doctor
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
+	shareddoctor "github.com/rocq-prover/rocq-platform-starter/shared/doctor"
+
+	"github.com/rocq-prover/rocq-platform-starter/macos/internal/installer"
 	"github.com/rocq-prover/rocq-platform-starter/macos/internal/vscode"
 )
+
+// probedBinaries are the Rocq/Coq binaries the doctor looks for on PATH.
+var probedBinaries = []string{"rocq", "coqtop", "coqc", "vsrocqtop"}
+
+// installation holds info about a found Rocq installation.
+type installation struct {
+	path    string
+	version string
+}
 
 // Run performs system diagnostics and reports findings via onLog callback.
 func Run(onLog func(string)) {
@@ -18,7 +29,7 @@ func Run(onLog func(string)) {
 
 	onLog("")
 	onLog("=== Binaries in PATH ===")
-	checkBinariesMacOS(onLog)
+	shareddoctor.CheckBinaries(onLog, shareddoctor.BinariesOptions{Names: probedBinaries})
 
 	onLog("")
 	onLog("=== opam ===")
@@ -26,21 +37,25 @@ func Run(onLog func(string)) {
 
 	onLog("")
 	onLog("=== VSCode ===")
-	vsrocqFound, vscoqFound := checkVSCode(onLog)
+	vsrocqFound, vscoqFound := shareddoctor.CheckVSCode(onLog, vscode.FindCode)
 
 	onLog("")
 	onLog("=== Workspace ===")
-	checkWorkspaceMacOS(onLog)
+	shareddoctor.CheckWorkspace(onLog, installer.WorkspaceName, nil)
 
 	onLog("")
 	onLog("=== Potential Issues ===")
 	checkIssues(onLog, installFound, vsrocqFound, vscoqFound)
 }
 
-// installation holds info about a found Rocq installation.
-type installation struct {
-	path    string
-	version string
+// checkAppContent resolves an .app bundle to its Resources directory before
+// inspecting it, then defers to the shared check.
+func checkAppContent(dir string) string {
+	resourcesDir := dir
+	if strings.HasSuffix(dir, ".app") {
+		resourcesDir = filepath.Join(dir, "Contents", "Resources")
+	}
+	return shareddoctor.InspectInstallDir(resourcesDir)
 }
 
 func getRocqVersion(binPath string) string {
@@ -50,7 +65,6 @@ func getRocqVersion(binPath string) string {
 	}
 	return strings.TrimSpace(string(out))
 }
-
 func checkInstallationsMacOS(onLog func(string)) bool {
 	var found []installation
 
@@ -141,33 +155,6 @@ func checkInstallationsMacOS(onLog func(string)) bool {
 
 // checkAppContent verifies that an installation directory/app bundle is not empty
 // or contains only coq-shell (which indicates a broken/incomplete installation).
-func checkAppContent(dir string) string {
-	// For .app bundles, check Contents/Resources
-	resourcesDir := dir
-	if strings.HasSuffix(dir, ".app") {
-		resourcesDir = filepath.Join(dir, "Contents", "Resources")
-	}
-	entries, err := os.ReadDir(resourcesDir)
-	if err != nil {
-		return fmt.Sprintf("cannot read directory: %v", err)
-	}
-	if len(entries) == 0 {
-		return "installation directory is empty"
-	}
-	// Check if directory contains only coq-shell (broken installation)
-	nonShellCount := 0
-	for _, e := range entries {
-		name := strings.ToLower(e.Name())
-		if name != "coq-shell" && name != "coq-shell.lnk" && name != "coq-shell.bat" && name != "coq-shell.sh" {
-			nonShellCount++
-		}
-	}
-	if nonShellCount == 0 {
-		return "installation contains only coq-shell \u2014 installation appears incomplete"
-	}
-	return ""
-}
-
 func alreadyFound(found []installation, path string) bool {
 	for _, f := range found {
 		if f.path == path {
@@ -176,23 +163,6 @@ func alreadyFound(found []installation, path string) bool {
 	}
 	return false
 }
-
-func checkBinariesMacOS(onLog func(string)) {
-	binaries := []string{"rocq", "coqtop", "coqc", "vsrocqtop"}
-	anyFound := false
-
-	for _, name := range binaries {
-		if p, err := exec.LookPath(name); err == nil {
-			onLog(fmt.Sprintf("  %s \u2192 %s", name, p))
-			anyFound = true
-		}
-	}
-
-	if !anyFound {
-		onLog("  (none found in PATH)")
-	}
-}
-
 func checkOpam(onLog func(string)) {
 	opamPath, err := exec.LookPath("opam")
 	if err != nil {
@@ -226,80 +196,6 @@ func checkOpam(onLog func(string)) {
 		onLog("  (no Rocq/Coq-related switches)")
 	}
 }
-
-func checkVSCode(onLog func(string)) (vsrocqFound, vscoqFound bool) {
-	codeBin, err := vscode.FindCode()
-	if err != nil {
-		onLog("  VSCode not found")
-		return false, false
-	}
-	onLog(fmt.Sprintf("  CLI: %s", codeBin))
-
-	out, err := exec.Command(codeBin, "--list-extensions", "--show-versions").Output()
-	if err != nil {
-		onLog("  (could not list extensions)")
-		return false, false
-	}
-
-	onLog("  Extensions:")
-	lines := strings.Split(string(out), "\n")
-	anyExt := false
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		lower := strings.ToLower(line)
-		if strings.Contains(lower, "rocq") || strings.Contains(lower, "coq") {
-			onLog(fmt.Sprintf("    %s", line))
-			anyExt = true
-			if strings.Contains(lower, "vsrocq") {
-				vsrocqFound = true
-			}
-			if strings.Contains(lower, "vscoq") {
-				vscoqFound = true
-			}
-		}
-	}
-	if !anyExt {
-		onLog("    (no Rocq/Coq extensions)")
-	}
-	if !vsrocqFound {
-		onLog("  \u26a0 vsrocq extension not found")
-	}
-	if vscoqFound {
-		onLog("  \u26a0 vscoq extension detected (deprecated, use vsrocq instead)")
-	}
-
-	return vsrocqFound, vscoqFound
-}
-
-func checkWorkspaceMacOS(onLog func(string)) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		onLog("  (could not determine home directory)")
-		return
-	}
-
-	wsDir := filepath.Join(home, "rocq-workspace")
-	if info, err := os.Stat(wsDir); err == nil && info.IsDir() {
-		onLog(fmt.Sprintf("  \u2713 %s", wsDir))
-
-		settingsPath := filepath.Join(wsDir, ".vscode", "settings.json")
-		if data, err := os.ReadFile(settingsPath); err == nil {
-			var settings map[string]interface{}
-			if err := json.Unmarshal(data, &settings); err == nil {
-				if v, ok := settings["vsrocq.path"]; ok {
-					onLog(fmt.Sprintf("  settings.json: vsrocq.path = %v", v))
-				} else {
-					onLog("  settings.json: vsrocq.path not set")
-				}
-			}
-		} else {
-			onLog("  .vscode/settings.json not found")
-		}
-	} else {
-		onLog(fmt.Sprintf("  %s not found", wsDir))
-	}
-}
-
 func checkIssues(onLog func(string), installFound, vsrocqFound, vscoqFound bool) {
 	anyIssue := false
 
