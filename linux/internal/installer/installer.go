@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/justme0606/rocq-platform-starter/linux/internal/manifest"
@@ -23,12 +24,20 @@ const (
 	WorkspaceName = "rocq-workspace"
 )
 
+// majorMinorRe captures the leading "<major>.<minor>" of a Rocq version,
+// ignoring any patch level, pre-release or build suffix.
+var majorMinorRe = regexp.MustCompile(`^(\d+)\.(\d+)`)
+
 // SwitchName returns the opam switch name for a given manifest.
 // Format: CP.<platform_release>~<rocq_major.minor>
+//
+// The version is reduced with a regexp rather than by splitting on ".", because
+// a package-pick may pin a pre-release such as "9.1+rc1"; splitting would leave
+// "+rc1" in the minor component and yield CP.2026.07.0~9.1+rc1.
 func SwitchName(rocqVersion, platformRelease string) string {
 	rocqShort := rocqVersion
-	if parts := strings.SplitN(rocqVersion, ".", 3); len(parts) >= 2 {
-		rocqShort = parts[0] + "." + parts[1]
+	if m := majorMinorRe.FindStringSubmatch(rocqVersion); m != nil {
+		rocqShort = m[1] + "." + m[2]
 	}
 	return "CP." + platformRelease + "~" + rocqShort
 }
