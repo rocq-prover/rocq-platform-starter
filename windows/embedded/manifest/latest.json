@@ -56,5 +56,27 @@
         }
       }
     }
+  },
+  "docker": {
+    "registry": "ghcr.io/rocq-prover",
+    "tag": "2026.01",
+    "user": "rocq",
+    "opam_switch": "4.14.2+flambda",
+    "vsrocqtop_path": "/home/rocq/.opam/4.14.2+flambda/bin/vsrocqtop",
+    "variants": {
+      "ide": {
+        "image": "rocq-platform_ide",
+        "description": "Rocq + RocqIDE + vsrocq language server (recommended)"
+      },
+      "extended": {
+        "image": "rocq-platform_extended",
+        "description": "IDE + extra libraries"
+      },
+      "full": {
+        "image": "rocq-platform_full",
+        "description": "Full Rocq Platform"
+      }
+    },
+    "default_variant": "ide"
   }
 }
