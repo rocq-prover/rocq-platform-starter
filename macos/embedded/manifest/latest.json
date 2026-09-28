@@ -7,14 +7,14 @@
       "arm64": {
         "type": "dmg",
         "url": "https://github.com/rocq-prover/platform/releases/download/2025.08.1/signed_Rocq-Platform-release-2025.08.2.dmg",
-        "sha256": ""
+        "sha256": "ca1d2a1a7e137dc82327a128bc1d709426f3038a4771a85f29a8d5524b56ab47"
       }
     },
     "windows": {
       "x86_64": {
         "type": "exe",
         "url": "https://github.com/rocq-prover/platform/releases/download/2025.08.1/signed_Rocq-Platform-release-2025.08.1-version.9.0.2025.08-Windows-x86_64.exe",
-        "sha256": ""
+        "sha256": "b858d2272f943e27499c54f70362088a945d1cd1393563c5c23dbcadd702ea0b"
       }
     },
     "linux": {
@@ -56,5 +56,27 @@
         }
       }
     }
+  },
+  "docker": {
+    "registry": "ghcr.io/rocq-prover",
+    "tag": "2026.01",
+    "user": "rocq",
+    "opam_switch": "4.14.2+flambda",
+    "vsrocqtop_path": "/home/rocq/.opam/4.14.2+flambda/bin/vsrocqtop",
+    "variants": {
+      "ide": {
+        "image": "rocq-platform_ide",
+        "description": "Rocq + RocqIDE + vsrocq language server (recommended)"
+      },
+      "extended": {
+        "image": "rocq-platform_extended",
+        "description": "IDE + extra libraries"
+      },
+      "full": {
+        "image": "rocq-platform_full",
+        "description": "Full Rocq Platform"
+      }
+    },
+    "default_variant": "ide"
   }
 }

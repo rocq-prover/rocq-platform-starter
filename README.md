@@ -76,22 +76,20 @@ determinism and reproducibility.
 
 ### Linux
 
-- opam ≥ 2.1
-- jq
-- curl
+- opam ≥ 2.x — must already be installed; the application does not install it
+  for you (or use the Docker mode below, which needs no opam)
 - VSCode (optional)
 
-For GUI build:
+For building from source:
 
 - go ≥ 1.22
-- Fyne dependencies
+- Fyne system dependencies: `libgl-dev`, `libxxf86vm-dev`, `libxi-dev`,
+  `libxcursor-dev`, `libxrandr-dev`, `libxinerama-dev`
 
 ---
 
 ### macOS
 
-- curl
-- jq
 - VSCode (optional)
 
 ---
@@ -106,7 +104,7 @@ No prerequisites for end users.
 
 Download the appropriate release for your platform:
 
-https://github.com/justme0606/rocq-platform-starter/releases
+https://github.com/rocq-prover/rocq-platform-starter/releases
 
 ---
 

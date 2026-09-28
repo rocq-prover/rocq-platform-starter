@@ -36,6 +36,14 @@ jobs:
         working-directory: linux
         run: go vet ./...
 
+      - name: Go test (shared)
+        working-directory: shared
+        run: go test ./...
+
+      - name: Go test (linux)
+        working-directory: linux
+        run: go test ./...
+
       - name: Build
         working-directory: linux
         run: make all VERSION=${{ inputs.tag }}
@@ -115,6 +123,10 @@ jobs:
       - name: Go vet
         working-directory: macos
         run: go vet ./...
+
+      - name: Go test (macos)
+        working-directory: macos
+        run: go test ./...
 
       - name: Build and package DMG
         working-directory: macos

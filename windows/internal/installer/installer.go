@@ -277,14 +277,21 @@ func Run(cfg *Config) (*Result, error) {
 		cfg.Logger.Log("Downloaded to %s", exePath)
 		defer os.RemoveAll(tempDir)
 
-		// Step 2: Verify SHA256
+		// Step 2: Verify SHA256.
+		// VerifySHA256 treats an empty expected value as "skip", so an absent
+		// manifest checksum must be reported as skipped rather than verified.
 		cfg.OnStep(2, "Verifying checksum...", 0.0)
-		cfg.Logger.Log("Verifying SHA256 (expected: %q)", asset.SHA256)
-		if err := VerifySHA256(exePath, asset.SHA256); err != nil {
-			return nil, fmt.Errorf("checksum: %w", err)
+		if strings.TrimSpace(asset.SHA256) == "" {
+			cfg.Logger.Log("WARNING: no sha256 for this asset in the manifest, integrity check SKIPPED")
+			cfg.OnStep(2, "Checksum skipped (absent from manifest).", 1.0)
+		} else {
+			cfg.Logger.Log("Verifying SHA256 (expected: %s)", asset.SHA256)
+			if err := VerifySHA256(exePath, asset.SHA256); err != nil {
+				return nil, fmt.Errorf("checksum: %w", err)
+			}
+			cfg.Logger.Log("Checksum verified")
+			cfg.OnStep(2, "Checksum verified.", 1.0)
 		}
-		cfg.Logger.Log("Checksum OK (or skipped)")
-		cfg.OnStep(2, "Checksum verified.", 1.0)
 
 		// Step 3: Install Rocq Platform
 		cfg.OnStep(3, "Installing Rocq Platform (follow the installer window)...", 0.0)

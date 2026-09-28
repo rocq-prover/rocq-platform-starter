@@ -6,7 +6,7 @@
 # Copyright (c) 2026 Sylvain Borgogno
 # Licensed under the MIT License.
 #
-# https://github.com/justme0606/rocq-platform-starter
+# https://github.com/rocq-prover/rocq-platform-starter
 #
 
 set -euo pipefail
@@ -149,8 +149,10 @@ fi
 echo "Fetching release JSON for tag: $TAG" >&2
 release_json="$(curl -fsSL -H "Accept: application/vnd.github+json" "${AUTH_HEADER[@]}" "$API_URL")"
 
-# Keep only signed dmg/exe assets
-assets="$(echo "$release_json" | jq -c '[.assets[] | select(.name | startswith("signed_")) | select(.name | endswith(".dmg") or endswith(".exe")) | {name, url: .browser_download_url}]')"
+# Keep only signed dmg/exe assets.
+# .digest is the sha256 GitHub itself computed ("sha256:<hex>"); it lets
+# --compute-sha256 skip the download when present.
+assets="$(echo "$release_json" | jq -c '[.assets[] | select(.name | startswith("signed_")) | select(.name | endswith(".dmg") or endswith(".exe")) | {name, url: .browser_download_url, digest: (.digest // "")}]')"
 
 if [[ "$(echo "$assets" | jq 'length')" -eq 0 ]]; then
   echo "No signed .dmg/.exe assets found for tag=$TAG" >&2
@@ -165,13 +167,20 @@ platform_release="$TAG"
 tmpdir="$(mktemp -d)"
 declare -A SHA_BY_URL
 if [[ "$COMPUTE_SHA256" -eq 1 ]]; then
-  echo "Computing sha256 for assets (downloading)..." >&2
-  while IFS=$'\t' read -r name url; do
+  echo "Resolving sha256 for assets..." >&2
+  while IFS=$'\t' read -r name url digest; do
+    # Prefer the digest GitHub already published: the Rocq Platform assets are
+    # 500-700 MB each, so downloading them just to hash them is wasteful.
+    if [[ "$digest" == sha256:* ]]; then
+      SHA_BY_URL["$url"]="${digest#sha256:}"
+      echo "  - $name (from GitHub digest)" >&2
+      continue
+    fi
+    echo "  - $name (no digest from the API, downloading)" >&2
     f="$tmpdir/$name"
-    echo "  - $name" >&2
     curl -fL --retry 3 --retry-delay 1 -o "$f" "$url"
     SHA_BY_URL["$url"]="$(sha256_file "$f")"
-  done < <(echo "$assets" | jq -r '.[] | [.name, .url] | @tsv')
+  done < <(echo "$assets" | jq -r '.[] | [.name, .url, .digest] | @tsv')
 fi
 
 # Build manifest skeleton with linux/opam default

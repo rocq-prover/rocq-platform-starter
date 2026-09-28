@@ -124,10 +124,10 @@ func FindExistingInstallations() []string {
 
 // Result holds information about the installation outcome.
 type Result struct {
-	VSCodeFound       bool   // Whether VSCode was detected on the system
-	InstalledApp      string // Path to the installed .app
-	VsrocqtopPath     string // Path to vsrocqtop binary
-	VsrocqtopWarning  string // Non-empty if vsrocqtop was not found
+	VSCodeFound      bool   // Whether VSCode was detected on the system
+	InstalledApp     string // Path to the installed .app
+	VsrocqtopPath    string // Path to vsrocqtop binary
+	VsrocqtopWarning string // Non-empty if vsrocqtop was not found
 }
 
 // Run executes the installation pipeline.
@@ -168,14 +168,21 @@ func Run(cfg *Config) (*Result, error) {
 		cfg.Logger.Log("Downloaded to %s", dmgPath)
 		defer os.RemoveAll(tempDir)
 
-		// Step 2: Verify SHA256
+		// Step 2: Verify SHA256.
+		// VerifySHA256 treats an empty expected value as "skip", so an absent
+		// manifest checksum must be reported as skipped rather than verified.
 		cfg.OnStep(2, "Verifying checksum...", 0.0)
-		cfg.Logger.Log("Verifying SHA256 (expected: %q)", asset.SHA256)
-		if err := VerifySHA256(dmgPath, asset.SHA256); err != nil {
-			return nil, fmt.Errorf("checksum: %w", err)
+		if strings.TrimSpace(asset.SHA256) == "" {
+			cfg.Logger.Log("WARNING: no sha256 for this asset in the manifest, integrity check SKIPPED")
+			cfg.OnStep(2, "Checksum skipped (absent from manifest).", 1.0)
+		} else {
+			cfg.Logger.Log("Verifying SHA256 (expected: %s)", asset.SHA256)
+			if err := VerifySHA256(dmgPath, asset.SHA256); err != nil {
+				return nil, fmt.Errorf("checksum: %w", err)
+			}
+			cfg.Logger.Log("Checksum verified")
+			cfg.OnStep(2, "Checksum verified.", 1.0)
 		}
-		cfg.Logger.Log("Checksum OK (or skipped)")
-		cfg.OnStep(2, "Checksum verified.", 1.0)
 
 		// Step 3: Mount DMG → find .app → copy to /Applications → unmount
 		cfg.OnStep(3, "Installing Rocq Platform...", 0.0)

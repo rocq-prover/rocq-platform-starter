@@ -56,27 +56,54 @@ jobs:
           fi
           echo "Platform parity OK"
 
+      - name: Validate embedded assets are in sync
+        run: |
+          echo "Checking embedded/ against the source of truth..."
+          FAIL=0
+          for p in linux macos windows; do
+            if ! diff -q manifest/latest.json "$p/embedded/manifest/latest.json" >/dev/null; then
+              echo "OUT OF SYNC: $p/embedded/manifest/latest.json"
+              FAIL=1
+            fi
+            for t in test.v main.v _RocqProject; do
+              if ! diff -q "templates/$t" "$p/embedded/templates/$t" >/dev/null; then
+                echo "OUT OF SYNC: $p/embedded/templates/$t"
+                FAIL=1
+              fi
+            done
+          done
+          if [ "$FAIL" -eq 1 ]; then
+            echo "Embedded assets differ from the source of truth."
+            echo "Run 'make sync-assets' in the affected platform directory and commit the result."
+            exit 1
+          fi
+          echo "Embedded assets in sync"
+
   # ──────────────────────────────────────────────
-  # Shell installer (Linux headless)
+  # Go formatting (all modules)
   # ──────────────────────────────────────────────
 
-  shell-installer:
-    name: Shell installer (Linux)
+  gofmt:
+    name: gofmt
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install deps (opam, jq)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y opam jq
-          opam init -y --bare
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
 
-      - name: Install (headless) + Doctor
+      - name: Check formatting
         run: |
-          chmod +x install.sh
-          ./install.sh --skip-vscode --workspace /tmp/rocq-ws --recreate-switch
-          ./install.sh --doctor --skip-vscode --workspace /tmp/rocq-ws
+          UNFORMATTED=$(gofmt -l shared linux macos windows)
+          if [ -n "$UNFORMATTED" ]; then
+            echo "The following files are not gofmt'd:"
+            echo "$UNFORMATTED"
+            echo
+            echo "Run: gofmt -w shared linux macos windows"
+            exit 1
+          fi
+          echo "All Go files are gofmt'd"
 
   # ──────────────────────────────────────────────
   # Linux GUI
@@ -101,6 +128,14 @@ jobs:
       - name: Go vet
         working-directory: linux
         run: go vet ./...
+
+      - name: Go test (shared)
+        working-directory: shared
+        run: go test ./...
+
+      - name: Go test (linux)
+        working-directory: linux
+        run: go test ./...
 
       - name: Build
         working-directory: linux
@@ -242,6 +277,11 @@ jobs:
           cp -f ../templates/main.v embedded/templates/main.v
           cp -f ../templates/_RocqProject embedded/templates/_RocqProject
 
+      - name: Go test (windows)
+        shell: bash
+        working-directory: windows
+        run: go test ./...
+
       - name: Build natively
         shell: bash
         working-directory: windows
@@ -293,6 +333,10 @@ jobs:
       - name: Go vet
         working-directory: macos
         run: go vet ./...
+
+      - name: Go test (macos)
+        working-directory: macos
+        run: go test ./...
 
       - name: Build and package DMG
         working-directory: macos
