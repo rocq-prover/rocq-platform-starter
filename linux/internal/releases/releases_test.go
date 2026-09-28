@@ -123,8 +123,8 @@ func TestParsePackagePick_NonPINPackages(t *testing.T) {
 
 	// Non-PIN packages that must be captured
 	want := map[string]string{
-		"rocqide":                  "9.0.1",
-		"vsrocq-language-server":   "2.3.4",
+		"rocqide":                "9.0.1",
+		"vsrocq-language-server": "2.3.4",
 	}
 	for name, version := range want {
 		got, ok := info.pinnedPackages[name]
@@ -145,10 +145,10 @@ func TestParsePackagePick_MultiplePackagesPerLine(t *testing.T) {
 	info := parsePackagePick(pickMultiPerLine)
 
 	want := map[string]string{
-		"elpi":            "3.1.0",
-		"rocq-elpi":       "3.1.0",
-		"coq-menhirlib":   "20240715",
-		"menhir":          "20240715",
+		"elpi":          "3.1.0",
+		"rocq-elpi":     "3.1.0",
+		"coq-menhirlib": "20240715",
+		"menhir":        "20240715",
 	}
 	for name, version := range want {
 		got, ok := info.pinnedPackages[name]
@@ -186,12 +186,12 @@ PACKAGES="${PACKAGES} coq-hott.9.0"
 	info := parsePackagePick(content)
 
 	want := map[string]string{
-		"sexplib":         "v0.16.0",
-		"rocq-bignums":    "9.0.0+rocq9.0",
-		"ocamlfind":       "1.9.5~relocatable",
-		"rocq-equations":  "1.3.1+9.0",
-		"coq-paramcoq":    "1.1.3+rocq9.0",
-		"coq-hott":        "9.0",
+		"sexplib":        "v0.16.0",
+		"rocq-bignums":   "9.0.0+rocq9.0",
+		"ocamlfind":      "1.9.5~relocatable",
+		"rocq-equations": "1.3.1+9.0",
+		"coq-paramcoq":   "1.1.3+rocq9.0",
+		"coq-hott":       "9.0",
 	}
 	for name, version := range want {
 		got, ok := info.pinnedPackages[name]
@@ -232,10 +232,10 @@ func TestParsePackagePick_RealisticInstallerPackages(t *testing.T) {
 
 	// These are the packages that FetchManifestForTag looks up.
 	required := map[string]string{
-		"coq":                     "9.0.1",
-		"rocq-stdlib":             "9.0.0",
-		"vsrocq-language-server":  "2.3.4",
-		"rocqide":                 "9.0.1",
+		"coq":                    "9.0.1",
+		"rocq-stdlib":            "9.0.0",
+		"vsrocq-language-server": "2.3.4",
+		"rocqide":                "9.0.1",
 	}
 	for name, version := range required {
 		got, ok := info.pinnedPackages[name]

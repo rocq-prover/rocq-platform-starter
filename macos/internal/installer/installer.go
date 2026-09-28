@@ -124,10 +124,10 @@ func FindExistingInstallations() []string {
 
 // Result holds information about the installation outcome.
 type Result struct {
-	VSCodeFound       bool   // Whether VSCode was detected on the system
-	InstalledApp      string // Path to the installed .app
-	VsrocqtopPath     string // Path to vsrocqtop binary
-	VsrocqtopWarning  string // Non-empty if vsrocqtop was not found
+	VSCodeFound      bool   // Whether VSCode was detected on the system
+	InstalledApp     string // Path to the installed .app
+	VsrocqtopPath    string // Path to vsrocqtop binary
+	VsrocqtopWarning string // Non-empty if vsrocqtop was not found
 }
 
 // Run executes the installation pipeline.

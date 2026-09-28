@@ -10,10 +10,10 @@ import (
 // indicators: ○ (pending), ▶ (in progress), ✓ (done).
 // Each step has an optional detail line shown below the step name.
 type StepChecklist struct {
-	icons   []*canvas.Text
-	names   []*canvas.Text
-	details []*canvas.Text
-	steps   []string
+	icons     []*canvas.Text
+	names     []*canvas.Text
+	details   []*canvas.Text
+	steps     []string
 	Container *fyne.Container
 }
 

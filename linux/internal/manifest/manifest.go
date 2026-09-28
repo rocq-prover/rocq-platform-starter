@@ -38,7 +38,7 @@ type DockerConfig struct {
 	User           string                   `json:"user"`
 	OpamSwitch     string                   `json:"opam_switch"`
 	VsrocqtopPath  string                   `json:"vsrocqtop_path"`
-	Variants       map[string]DockerVariant  `json:"variants"`
+	Variants       map[string]DockerVariant `json:"variants"`
 	DefaultVariant string                   `json:"default_variant"`
 }
 
