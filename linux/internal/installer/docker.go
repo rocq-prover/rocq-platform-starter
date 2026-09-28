@@ -9,8 +9,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/justme0606/rocq-platform-starter/linux/internal/vscode"
-	"github.com/justme0606/rocq-platform-starter/linux/internal/workspace"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/vscode"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/workspace"
 )
 
 // DockerConfig holds all parameters for the Docker installation pipeline.

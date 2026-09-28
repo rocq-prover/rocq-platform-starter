@@ -6,11 +6,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/justme0606/rocq-platform-starter/shared/startup"
+	"github.com/rocq-prover/rocq-platform-starter/shared/startup"
 
-	rootfs "github.com/justme0606/rocq-platform-starter/linux"
-	"github.com/justme0606/rocq-platform-starter/linux/internal/gui"
-	"github.com/justme0606/rocq-platform-starter/linux/internal/manifest"
+	rootfs "github.com/rocq-prover/rocq-platform-starter/linux"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/gui"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/manifest"
 )
 
 var Version = "dev"

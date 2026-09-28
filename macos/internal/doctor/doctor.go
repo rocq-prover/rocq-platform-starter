@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/justme0606/rocq-platform-starter/macos/internal/vscode"
+	"github.com/rocq-prover/rocq-platform-starter/macos/internal/vscode"
 )
 
 // Run performs system diagnostics and reports findings via onLog callback.

@@ -5,12 +5,12 @@ import (
 	"io/fs"
 	"time"
 
-	sharedgui "github.com/justme0606/rocq-platform-starter/shared/gui"
+	sharedgui "github.com/rocq-prover/rocq-platform-starter/shared/gui"
 
-	"github.com/justme0606/rocq-platform-starter/macos/internal/doctor"
-	"github.com/justme0606/rocq-platform-starter/macos/internal/installer"
-	"github.com/justme0606/rocq-platform-starter/macos/internal/manifest"
-	"github.com/justme0606/rocq-platform-starter/macos/internal/releases"
+	"github.com/rocq-prover/rocq-platform-starter/macos/internal/doctor"
+	"github.com/rocq-prover/rocq-platform-starter/macos/internal/installer"
+	"github.com/rocq-prover/rocq-platform-starter/macos/internal/manifest"
+	"github.com/rocq-prover/rocq-platform-starter/macos/internal/releases"
 )
 
 const totalSteps = 7

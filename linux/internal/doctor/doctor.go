@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/justme0606/rocq-platform-starter/linux/internal/vscode"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/vscode"
 )
 
 // Run performs system diagnostics and reports findings via onLog callback.

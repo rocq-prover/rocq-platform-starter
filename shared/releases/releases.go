@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/justme0606/rocq-platform-starter/shared/github"
+	"github.com/rocq-prover/rocq-platform-starter/shared/github"
 )
 
 const (

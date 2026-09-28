@@ -11,11 +11,11 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 
-	sharedinstaller "github.com/justme0606/rocq-platform-starter/shared/installer"
+	sharedinstaller "github.com/rocq-prover/rocq-platform-starter/shared/installer"
 
-	"github.com/justme0606/rocq-platform-starter/windows/internal/manifest"
-	"github.com/justme0606/rocq-platform-starter/windows/internal/vscode"
-	"github.com/justme0606/rocq-platform-starter/windows/internal/workspace"
+	"github.com/rocq-prover/rocq-platform-starter/windows/internal/manifest"
+	"github.com/rocq-prover/rocq-platform-starter/windows/internal/vscode"
+	"github.com/rocq-prover/rocq-platform-starter/windows/internal/workspace"
 )
 
 // Logger wraps the shared Logger type.

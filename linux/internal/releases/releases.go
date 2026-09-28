@@ -9,10 +9,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/justme0606/rocq-platform-starter/shared/github"
-	sharedreleases "github.com/justme0606/rocq-platform-starter/shared/releases"
+	"github.com/rocq-prover/rocq-platform-starter/shared/github"
+	sharedreleases "github.com/rocq-prover/rocq-platform-starter/shared/releases"
 
-	"github.com/justme0606/rocq-platform-starter/linux/internal/manifest"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/manifest"
 )
 
 type ghContent struct {

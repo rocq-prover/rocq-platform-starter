@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 
-	sharedmanifest "github.com/justme0606/rocq-platform-starter/shared/manifest"
+	sharedmanifest "github.com/rocq-prover/rocq-platform-starter/shared/manifest"
 )
 
 type Asset struct {

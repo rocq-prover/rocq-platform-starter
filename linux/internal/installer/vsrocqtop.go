@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/justme0606/rocq-platform-starter/linux/internal/vscode"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/vscode"
 )
 
 // FindLanguageServerTop searches for the vsrocqtop or vscoqtop binary in the opam switch.
