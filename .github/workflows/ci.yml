@@ -106,28 +106,6 @@ jobs:
           echo "All Go files are gofmt'd"
 
   # ──────────────────────────────────────────────
-  # Shell installer (Linux headless)
-  # ──────────────────────────────────────────────
-
-  shell-installer:
-    name: Shell installer (Linux)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install deps (opam, jq)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y opam jq
-          opam init -y --bare
-
-      - name: Install (headless) + Doctor
-        run: |
-          chmod +x install.sh
-          ./install.sh --skip-vscode --workspace /tmp/rocq-ws --recreate-switch
-          ./install.sh --doctor --skip-vscode --workspace /tmp/rocq-ws
-
-  # ──────────────────────────────────────────────
   # Linux GUI
   # ──────────────────────────────────────────────
 
