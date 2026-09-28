@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/justme0606/rocq-platform-starter/shared/github"
@@ -82,16 +83,84 @@ func parsePackagePick(content string) *packagePickInfo {
 	return info
 }
 
-// findPackagePickFile finds the matching package-pick filename for a release tag.
-// Tag format: "2025.08.1" → look for file containing "~2025.08" in its name.
-func findPackagePickFile(tag string) (string, error) {
-	// Extract YYYY.MM from tag (e.g. "2025.08.1" → "2025.08")
+// pickFileRe matches a package-pick filename: the Rocq major.minor it pins,
+// then the platform cycle it belongs to, e.g. "package-pick-9.1~2026.01.sh".
+var pickFileRe = regexp.MustCompile(`^package-pick-(\d+\.\d+)~(\d{4}\.\d{2})\.sh$`)
+
+// tagYearMonth reduces a platform release tag to its YYYY.MM, e.g.
+// "2025.08.1" -> "2025.08".
+func tagYearMonth(tag string) (string, error) {
 	parts := strings.SplitN(tag, ".", 3)
 	if len(parts) < 2 {
 		return "", fmt.Errorf("invalid tag format: %s", tag)
 	}
-	yearMonth := parts[0] + "." + parts[1]
+	return parts[0] + "." + parts[1], nil
+}
 
+// selectPackagePick picks the package-pick file for a release out of a
+// package_picks directory listing.
+//
+// The filename encodes the Rocq major.minor it pins and the platform cycle it
+// was introduced in; neither is the release's own date. Matching on the release
+// date alone is wrong twice over: release 2026.07.0 ships Rocq 9.1, whose pick
+// is package-pick-9.1~2026.01.sh and so was never found at all, while releases
+// such as 2022.09.1 (Coq 8.16) matched package-pick-8.15~2022.09.sh because two
+// Rocq versions share that cycle.
+//
+// rocqVersion is the version advertised by the release, and may be empty when it
+// could not be inferred; the date-only match is then kept as a fallback so old
+// releases whose notes cannot be parsed still resolve.
+func selectPackagePick(names []string, tag, rocqVersion string) (string, error) {
+	yearMonth, err := tagYearMonth(tag)
+	if err != nil {
+		return "", err
+	}
+
+	if majorMinor := rocqMajorMinor(rocqVersion); majorMinor != "" {
+		type candidate struct{ cycle, name string }
+		var cands []candidate
+		for _, n := range names {
+			if m := pickFileRe.FindStringSubmatch(n); m != nil && m[1] == majorMinor {
+				cands = append(cands, candidate{cycle: m[2], name: n})
+			}
+		}
+		// YYYY.MM is zero-padded, so lexicographic order is chronological.
+		sort.Slice(cands, func(i, j int) bool { return cands[i].cycle < cands[j].cycle })
+
+		if len(cands) > 0 {
+			// The cycle matching the release wins; otherwise the newest cycle
+			// that predates it; otherwise the newest known for that version.
+			best := ""
+			for _, c := range cands {
+				if c.cycle == yearMonth {
+					return c.name, nil
+				}
+				if c.cycle <= yearMonth {
+					best = c.name
+				}
+			}
+			if best != "" {
+				return best, nil
+			}
+			return cands[len(cands)-1].name, nil
+		}
+	}
+
+	// Fallback: the legacy date-only match.
+	suffix := "~" + yearMonth + ".sh"
+	for _, n := range names {
+		if strings.HasSuffix(n, suffix) {
+			return n, nil
+		}
+	}
+
+	return "", fmt.Errorf("no package-pick file found for release %s (Rocq %q, looked for package-pick-<major.minor>~*.sh and *%s)",
+		tag, rocqVersion, suffix)
+}
+
+// findPackagePickFile lists package_picks on GitHub and selects the file for a
+// release. rocqVersion may be empty.
+func findPackagePickFile(tag, rocqVersion string) (string, error) {
 	// List package_picks directory
 	resp, err := github.Get(repoContentsURL)
 	if err != nil {
@@ -113,15 +182,12 @@ func findPackagePickFile(tag string) (string, error) {
 		return "", fmt.Errorf("parse package_picks listing: %w", err)
 	}
 
-	// Find file matching ~YYYY.MM.sh
-	suffix := "~" + yearMonth + ".sh"
+	names := make([]string, 0, len(contents))
 	for _, c := range contents {
-		if strings.HasSuffix(c.Name, suffix) {
-			return c.Name, nil
-		}
+		names = append(names, c.Name)
 	}
 
-	return "", fmt.Errorf("no package-pick file found for release %s (looked for *%s)", tag, suffix)
+	return selectPackagePick(names, tag, rocqVersion)
 }
 
 // fetchPackagePick downloads and parses a package-pick file.
@@ -148,8 +214,16 @@ func fetchPackagePick(filename string) (*packagePickInfo, error) {
 // FetchManifestForTag fetches a specific release from GitHub, reads its package-pick
 // file, and builds a Linux manifest with the actual pinned versions.
 func FetchManifestForTag(tag string) (*manifest.Manifest, error) {
+	// The release notes tell us which Rocq version this release ships, which is
+	// what identifies the package-pick file. Best effort: selectPackagePick
+	// falls back to a date-only match when this cannot be determined.
+	rocqFromRelease, err := sharedreleases.FetchRocqVersion(tag)
+	if err != nil {
+		rocqFromRelease = ""
+	}
+
 	// Find and fetch the package-pick file for this release
-	pickFile, err := findPackagePickFile(tag)
+	pickFile, err := findPackagePickFile(tag, rocqFromRelease)
 	if err != nil {
 		return nil, fmt.Errorf("find package-pick: %w", err)
 	}
