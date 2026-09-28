@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   never executed).
 - CI: check that `*/embedded/manifest/latest.json` and `*/embedded/templates/*`
   match the repository source of truth (`manifest/latest.json`, `templates/`).
+- Tests for `shared/installer.VerifySHA256`, covering the empty-expected skip,
+  case and whitespace tolerance, mismatch reporting and tamper detection. The
+  `shared` module previously had no tests at all.
+- `make-manifest.sh --compute-sha256` now uses the `digest` field the GitHub API
+  already publishes and only downloads an asset when that field is absent.
 
 ### Changed
 
@@ -35,6 +40,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Integrity check was a silent no-op on macOS and Windows.** The `sha256`
+  fields of both assets were empty in the manifest, and `VerifySHA256` returns
+  nil for an empty expected value, so a tampered download would have been
+  accepted. The log even read "Checksum OK (or skipped)". Both checksums are now
+  populated (cross-checked against the GitHub API `digest`), and the installers
+  distinguish a verified checksum from a skipped one, logging an explicit
+  WARNING in the latter case.
 - Formatting of `shared/gui/stepchecklist.go`, `linux/internal/manifest/manifest.go`,
   `linux/internal/releases/releases_test.go` and `macos/internal/installer/installer.go`.
 
