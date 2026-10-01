@@ -164,8 +164,8 @@ func TestRocqMajorMinor(t *testing.T) {
 		"9":        "",
 	}
 	for in, want := range cases {
-		if got := rocqMajorMinor(in); got != want {
-			t.Errorf("rocqMajorMinor(%q) = %q, want %q", in, got, want)
+		if got := RocqMajorMinor(in); got != want {
+			t.Errorf("RocqMajorMinor(%q) = %q, want %q", in, got, want)
 		}
 	}
 }

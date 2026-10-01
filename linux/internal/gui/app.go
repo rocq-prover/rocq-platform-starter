@@ -16,9 +16,30 @@ import (
 
 const totalSteps = 7
 
+// dockerSupportedRocqMinors lists the Rocq major.minor versions the Docker
+// mode has a pre-built GHCR image for. Picking any other release hides the
+// Docker button rather than offering an image that does not exist.
+var dockerSupportedRocqMinors = map[string]bool{
+	"9.0": true,
+	"9.1": true,
+}
+
+// dockerSupportsRocqVersion reports whether the Docker mode has a pre-built
+// image for the given Rocq version.
+func dockerSupportsRocqVersion(rocqVersion string) bool {
+	return dockerSupportedRocqMinors[releases.RocqMajorMinor(rocqVersion)]
+}
+
 // Run creates and runs the GUI application.
 func Run(m *manifest.Manifest, templates fs.FS, icon []byte, version string, showLog bool) {
 	currentManifest := m
+
+	// embeddedDocker is the Docker/Dev-Container config from the manifest the
+	// binary ships with. It is not tied to a specific release -- it describes
+	// the handful of pre-built GHCR images the Docker mode currently offers --
+	// so it is reused as-is for any release that qualifies, rather than being
+	// something releases.FetchManifestForTag could ever produce on its own.
+	embeddedDocker := m.Docker
 
 	cfg := &sharedgui.AppConfig{
 		Version:    version,
@@ -68,13 +89,14 @@ func Run(m *manifest.Manifest, templates fs.FS, icon []byte, version string, sho
 		},
 	}
 
-	// Configure Docker button if the manifest has a docker section
+	// Configure Docker button: shown only when a Docker config is embedded and
+	// the currently targeted release's Rocq version is one it supports.
 	configureDocker := func() {
-		if currentManifest.Docker == nil {
+		if embeddedDocker == nil || !dockerSupportsRocqVersion(currentManifest.RocqVersion) {
 			cfg.DockerInstall = nil
 			return
 		}
-		dc := currentManifest.Docker
+		dc := embeddedDocker
 		if _, ok := dc.Variants[dc.DefaultVariant]; !ok {
 			cfg.DockerInstall = nil
 			return
@@ -111,8 +133,7 @@ func Run(m *manifest.Manifest, templates fs.FS, icon []byte, version string, sho
 			Variants:       variants,
 			DefaultVariant: dc.DefaultVariant,
 			RunInstall: func(ctx *sharedgui.InstallContext, variant string) {
-				// Read current docker config at invocation time
-				curDC := currentManifest.Docker
+				curDC := embeddedDocker
 				curVariant, ok := curDC.Variants[variant]
 				if !ok {
 					curVariant = curDC.Variants[curDC.DefaultVariant]

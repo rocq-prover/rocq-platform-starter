@@ -116,7 +116,7 @@ func selectPackagePick(names []string, tag, rocqVersion string) (string, error) 
 		return "", err
 	}
 
-	if majorMinor := rocqMajorMinor(rocqVersion); majorMinor != "" {
+	if majorMinor := RocqMajorMinor(rocqVersion); majorMinor != "" {
 		type candidate struct{ cycle, name string }
 		var cands []candidate
 		for _, n := range names {
