@@ -238,6 +238,25 @@ func Run(cfg *AppConfig) {
 		return label
 	}
 
+	// loadedLabel is the dropdown entry whose manifest is actually loaded. A
+	// failed fetch must put the selection back to it: showing a release the
+	// installer will not use is how "install 9.1" silently installed 9.0.
+	loadedLabel := initialLabel
+
+	// releaseLoadFailed reverts the dropdown and tells the user, instead of
+	// leaving the UI claiming a release that was never resolved. The log panel
+	// is hidden unless --log is passed, so this also raises a dialog.
+	releaseLoadFailed := func(tag string, err error) {
+		releaseSelect.Selected = loadedLabel
+		releaseSelect.Refresh()
+		logP.Append(fmt.Sprintf("ERROR: could not resolve release %s: %v", tag, err))
+		logP.Append(fmt.Sprintf("Still targeting %s (Rocq %s).",
+			cfg.GetPlatformRelease(), cfg.GetRocqVersion()))
+		dialog.ShowError(fmt.Errorf(
+			"Could not resolve release %s:\n%v\n\nStill targeting %s (Rocq %s).",
+			tag, err, cfg.GetPlatformRelease(), cfg.GetRocqVersion()), w)
+	}
+
 	// Fetch available releases in background with versions
 	go func() {
 		tags, err := cfg.FetchReleases()
@@ -286,24 +305,30 @@ func Run(cfg *AppConfig) {
 		releaseSelect.Refresh()
 
 		// Fetch full manifest for the most recent release
-		latestTag := resolveTag(releaseSelect.Selected)
+		latestLabel := releaseSelect.Selected
+		latestTag := resolveTag(latestLabel)
 		if err := cfg.FetchManifestForTag(latestTag); err != nil {
+			releaseLoadFailed(latestTag, err)
 			return
 		}
+		loadedLabel = latestLabel
 		resetLog()
 	}()
 
 	releaseSelect.OnChanged = func(selected string) {
 		tag := resolveTag(selected)
 		if tag == cfg.GetPlatformRelease() {
+			loadedLabel = selected
 			return
 		}
 		releaseSelect.Disable()
 		go func() {
 			if err := cfg.FetchManifestForTag(tag); err != nil {
+				releaseLoadFailed(tag, err)
 				releaseSelect.Enable()
 				return
 			}
+			loadedLabel = selected
 			resetLog()
 			releaseSelect.Enable()
 		}()
