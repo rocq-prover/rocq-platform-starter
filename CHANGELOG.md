@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `NotIntel`, plus `GHAsset.SHA256()` reading GitHub's `digest` field.
 - Tests parsing each platform's real embedded manifest, asserting among other
   things that the committed sha256 is 64 hex characters.
+- A hint in the Docker install success message (log panel, step checklist and
+  final dialog) about reloading the VSCode window if the language server
+  crashes right after a container (re)build — a known VSCode Dev Containers
+  timing quirk, not something `devcontainer.json` content can prevent (#37).
 
 ### Changed
 
@@ -80,6 +84,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   picking a different release in the dropdown silently disabled the integrity
   check. Both macOS and Windows now populate the asset checksum from the digest
   GitHub publishes.
+- **The Docker button disappeared for every release fetched from the dropdown,
+  not just unsupported ones** (#34). `releases.FetchManifestForTag` never set
+  `Docker` on the manifest it built, so `configureDocker`'s `nil` check hid the
+  button for any release, including 9.0 and 9.1, which do have a Docker image.
+  The Docker config now always comes from the embedded manifest (not tied to a
+  specific release) and is shown based on
+  `linux/internal/gui.dockerSupportsRocqVersion(currentManifest.RocqVersion)`.
+- **`doctor` did not recognize `RP.*` opam switches** (#35), the naming
+  convention upstream has moved new switches to. `checkSwitches` and the
+  multiple-switch warning now match `RP.*` alongside the existing `CP.*` and
+  `coq-*` prefixes.
+- **A stale `vsrocq.path` could shadow the Docker container's language server
+  path** (#36). `.vscode/settings.json` lives in the workspace folder, which is
+  bind-mounted into the Dev Container, and VSCode gives it priority over
+  `devcontainer.json`'s `customizations.vscode.settings`. A host path left
+  behind by an earlier native install (or a previous Docker run) kept
+  shadowing the container path, crashing the language server after "Reopen in
+  Container". `RunDocker` now overwrites `.vscode/settings.json` with the
+  container path on every Docker install.
 
 ## [1.2.0] - 2026-09-07
 
