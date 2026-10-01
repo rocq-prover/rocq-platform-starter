@@ -303,11 +303,17 @@ func runDockerInstall(ctx *sharedgui.InstallContext, image, vsrocqtopPath, user 
 		return
 	}
 
+	const reloadHint = "If the language server shows an error right after the " +
+		"container starts (first build/rebuild only), run 'Developer: Reload Window' " +
+		"once — VSCode sometimes activates the extension before the container's " +
+		"settings finish syncing."
+
 	ctx.StatusLabel.SetText(fmt.Sprintf("Docker setup complete! (%s)", elapsed))
 	ctx.LogPanel.Append(fmt.Sprintf("Docker setup complete! (%s)", elapsed))
 	ctx.LogPanel.Append(fmt.Sprintf("Image: %s", image))
 	ctx.LogPanel.Append(fmt.Sprintf("Workspace: ~/%s", installer.WorkspaceName))
 	ctx.LogPanel.Append("Open the workspace in VSCode and use 'Reopen in Container'.")
+	ctx.LogPanel.Append(reloadHint)
 
 	if ctx.Checklist != nil {
 		ctx.Checklist.AppendSummary("")
@@ -321,5 +327,6 @@ func runDockerInstall(ctx *sharedgui.InstallContext, image, vsrocqtopPath, user 
 		fmt.Sprintf("Docker setup completed successfully in %s.\n\n", elapsed)+
 			fmt.Sprintf("Image: %s\n", image)+
 			fmt.Sprintf("Workspace: ~/%s\n\n", installer.WorkspaceName)+
-			"Open the workspace in VSCode and select\n'Reopen in Container' to start coding.")
+			"Open the workspace in VSCode and select\n'Reopen in Container' to start coding.\n\n"+
+			reloadHint)
 }
