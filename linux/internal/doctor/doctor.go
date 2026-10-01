@@ -85,7 +85,7 @@ func checkSwitches(onLog func(string)) bool {
 		if name == "" {
 			continue
 		}
-		if strings.HasPrefix(name, "CP.") || strings.HasPrefix(name, "coq-") {
+		if strings.HasPrefix(name, "CP.") || strings.HasPrefix(name, "coq-") || strings.HasPrefix(name, "RP.") {
 			found = true
 			onLog(fmt.Sprintf("  \u2713 %s", name))
 			checkSwitchPackages(name, onLog)
@@ -94,7 +94,7 @@ func checkSwitches(onLog func(string)) bool {
 	}
 
 	if !found {
-		onLog("  \u26a0 No Rocq/Coq Platform switches found (CP.* or coq-*)")
+		onLog("  \u26a0 No Rocq/Coq Platform switches found (RP.*, CP.* or coq-*)")
 	}
 	return found
 }
@@ -180,16 +180,17 @@ func checkIssues(onLog func(string), opamFound, installFound, vsrocqFound, vscoq
 		anyIssue = true
 	}
 
-	// Check for multiple CP.* switches
+	// Check for multiple Rocq/Coq Platform switches
 	if opamFound {
 		out, _ := exec.Command("opam", "switch", "list", "--short").Output()
-		cpCount := 0
+		platformSwitchCount := 0
 		for _, line := range strings.Split(string(out), "\n") {
-			if strings.HasPrefix(strings.TrimSpace(line), "CP.") {
-				cpCount++
+			name := strings.TrimSpace(line)
+			if strings.HasPrefix(name, "CP.") || strings.HasPrefix(name, "RP.") {
+				platformSwitchCount++
 			}
 		}
-		if cpCount > 1 {
+		if platformSwitchCount > 1 {
 			onLog("  \u26a0 Multiple Rocq Platform switches detected \u2014 potential confusion")
 			anyIssue = true
 		}
