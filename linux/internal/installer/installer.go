@@ -11,9 +11,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/justme0606/rocq-platform-starter/linux/internal/manifest"
-	"github.com/justme0606/rocq-platform-starter/linux/internal/vscode"
-	"github.com/justme0606/rocq-platform-starter/linux/internal/workspace"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/manifest"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/vscode"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/workspace"
 )
 
 func debugLog(format string, args ...interface{}) {
@@ -86,7 +86,7 @@ func FindExistingInstallations() []string {
 
 // Run executes the installation pipeline via opam.
 // Steps:
-//  1. Check/install opam
+//  1. Check opam is present
 //  2. Initialize opam (opam init)
 //  3. Create opam switch
 //  4. Configure rocq-released repo
@@ -113,9 +113,9 @@ func Run(cfg *Config) (*Result, error) {
 		cfg.OnStep(4, "Skipped (reusing switch).", 1.0)
 		cfg.OnStep(5, "Skipped (reusing switch).", 1.0)
 	} else {
-		// Step 1: Check/install opam
+		// Step 1: Check opam is present (it is never installed for the user)
 		cfg.OnStep(1, "Checking for opam...", 0.0)
-		opamBin, err := ensureOpam(cfg.Logger)
+		opamBin, err := requireOpam(cfg.Logger)
 		if err != nil {
 			return nil, fmt.Errorf("opam: %w", err)
 		}
@@ -204,8 +204,10 @@ func Run(cfg *Config) (*Result, error) {
 	return result, nil
 }
 
-// ensureOpam checks for opam in PATH or installs it.
-func ensureOpam(logger *Logger) (string, error) {
+// requireOpam returns the path to opam, or an error if it is absent or too
+// old. It never installs opam: doing so would need a package manager and
+// root, so the user is pointed at the upstream instructions instead.
+func requireOpam(logger *Logger) (string, error) {
 	path, err := exec.LookPath("opam")
 	if err == nil {
 		// Verify version

@@ -5,41 +5,21 @@ import (
 	"fmt"
 	"io/fs"
 
-	sharedmanifest "github.com/justme0606/rocq-platform-starter/shared/manifest"
+	sharedmanifest "github.com/rocq-prover/rocq-platform-starter/shared/manifest"
 )
 
-type OpamPackage struct {
-	Name     string `json:"name"`
-	Version  string `json:"version"`
-	Optional string `json:"optional,omitempty"`
-}
+// Re-exported so callers in this module keep using manifest.OpamPackage etc.
+type (
+	OpamPackage   = sharedmanifest.OpamPackage
+	OpamConfig    = sharedmanifest.OpamConfig
+	DockerVariant = sharedmanifest.DockerVariant
+	DockerConfig  = sharedmanifest.DockerConfig
+)
 
-type OpamConfig struct {
-	OCamlCompiler string        `json:"ocaml_compiler"`
-	SwitchPrefix  string        `json:"switch_prefix"`
-	RepoName      string        `json:"repo_name"`
-	RepoURL       string        `json:"repo_url"`
-	Packages      []OpamPackage `json:"packages"`
-}
-
+// Asset is the Linux asset: an opam switch description rather than a download.
 type Asset struct {
 	Type string     `json:"type"`
 	Opam OpamConfig `json:"opam"`
-}
-
-type DockerVariant struct {
-	Image       string `json:"image"`
-	Description string `json:"description"`
-}
-
-type DockerConfig struct {
-	Registry       string                   `json:"registry"`
-	Tag            string                   `json:"tag"`
-	User           string                   `json:"user"`
-	OpamSwitch     string                   `json:"opam_switch"`
-	VsrocqtopPath  string                   `json:"vsrocqtop_path"`
-	Variants       map[string]DockerVariant `json:"variants"`
-	DefaultVariant string                   `json:"default_variant"`
 }
 
 type Assets struct {
@@ -48,12 +28,11 @@ type Assets struct {
 	} `json:"linux"`
 }
 
+// Manifest is the Linux view of manifest/latest.json. Base is embedded, so
+// Channel, RocqVersion, PlatformRelease and Docker are promoted.
 type Manifest struct {
-	Channel         string        `json:"channel"`
-	RocqVersion     string        `json:"rocq_version"`
-	PlatformRelease string        `json:"platform_release"`
-	Assets          Assets        `json:"assets"`
-	Docker          *DockerConfig `json:"docker,omitempty"`
+	sharedmanifest.Base
+	Assets Assets `json:"assets"`
 }
 
 // Parse parses a manifest from raw JSON bytes.
@@ -68,6 +47,11 @@ func Parse(data []byte) (*Manifest, error) {
 	}
 
 	return &m, nil
+}
+
+// NewBase builds the common manifest fields for a runtime-assembled manifest.
+func NewBase(rocqVersion, platformRelease string) sharedmanifest.Base {
+	return sharedmanifest.NewBase(rocqVersion, platformRelease)
 }
 
 // Load reads and parses the manifest from an embedded filesystem.

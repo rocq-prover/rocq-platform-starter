@@ -1,7 +1,6 @@
 package doctor
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,8 +9,20 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 
-	"github.com/justme0606/rocq-platform-starter/windows/internal/vscode"
+	shareddoctor "github.com/rocq-prover/rocq-platform-starter/shared/doctor"
+
+	"github.com/rocq-prover/rocq-platform-starter/windows/internal/installer"
+	"github.com/rocq-prover/rocq-platform-starter/windows/internal/vscode"
 )
+
+// probedBinaries are the Rocq/Coq binaries the doctor looks for on PATH.
+var probedBinaries = []string{"rocq", "coqtop", "coqc", "vsrocqtop"}
+
+// installation holds info about a found Rocq installation.
+type installation struct {
+	path    string
+	version string
+}
 
 // Run performs system diagnostics and reports findings via onLog callback.
 func Run(onLog func(string)) {
@@ -20,25 +31,22 @@ func Run(onLog func(string)) {
 
 	onLog("")
 	onLog("=== Binaries in PATH ===")
-	checkBinariesWindows(onLog)
+	shareddoctor.CheckBinaries(onLog, shareddoctor.BinariesOptions{
+		Names:        probedBinaries,
+		TryExeSuffix: true,
+	})
 
 	onLog("")
 	onLog("=== VSCode ===")
-	vsrocqFound, vscoqFound := checkVSCode(onLog)
+	vsrocqFound, vscoqFound := shareddoctor.CheckVSCode(onLog, vscode.FindCode)
 
 	onLog("")
 	onLog("=== Workspace ===")
-	checkWorkspaceWindows(onLog)
+	shareddoctor.CheckWorkspace(onLog, installer.WorkspaceName, nil)
 
 	onLog("")
 	onLog("=== Potential Issues ===")
 	checkIssues(onLog, installFound, vsrocqFound, vscoqFound)
-}
-
-// installation holds info about a found Rocq installation.
-type installation struct {
-	path    string
-	version string
 }
 
 func getRocqVersion(dir string) string {
@@ -55,7 +63,49 @@ func getRocqVersion(dir string) string {
 	}
 	return ""
 }
+func findAllFromRegistry() []string {
+	var results []string
+	uninstallKey := `SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall`
 
+	for _, rootKey := range []registry.Key{registry.LOCAL_MACHINE, registry.CURRENT_USER} {
+		k, err := registry.OpenKey(rootKey, uninstallKey, registry.ENUMERATE_SUB_KEYS|registry.READ)
+		if err != nil {
+			continue
+		}
+
+		subkeys, err := k.ReadSubKeyNames(-1)
+		k.Close()
+		if err != nil {
+			continue
+		}
+
+		for _, subkey := range subkeys {
+			sk, err := registry.OpenKey(rootKey, uninstallKey+`\`+subkey, registry.READ)
+			if err != nil {
+				continue
+			}
+
+			displayName, _, err := sk.GetStringValue("DisplayName")
+			if err != nil {
+				sk.Close()
+				continue
+			}
+
+			lower := strings.ToLower(displayName)
+			if strings.Contains(lower, "rocq") || strings.Contains(lower, "coq") {
+				installLoc, _, err := sk.GetStringValue("InstallLocation")
+				sk.Close()
+				if err == nil && installLoc != "" {
+					results = append(results, installLoc)
+				}
+				continue
+			}
+			sk.Close()
+		}
+	}
+
+	return results
+}
 func checkInstallationsWindows(onLog func(string)) bool {
 	var found []installation
 
@@ -120,7 +170,7 @@ func checkInstallationsWindows(onLog func(string)) bool {
 		} else {
 			onLog(fmt.Sprintf("  \u2713 %s  (version unknown)", inst.path))
 		}
-		if warning := checkDirContent(inst.path); warning != "" {
+		if warning := shareddoctor.InspectInstallDir(inst.path); warning != "" {
 			onLog(fmt.Sprintf("    \u26a0 %s", warning))
 		}
 	}
@@ -129,28 +179,6 @@ func checkInstallationsWindows(onLog func(string)) bool {
 
 // checkDirContent verifies that an installation directory is not empty
 // or contains only coq-shell (which indicates a broken/incomplete installation).
-func checkDirContent(dir string) string {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return fmt.Sprintf("cannot read directory: %v", err)
-	}
-	if len(entries) == 0 {
-		return "installation directory is empty"
-	}
-	// Check if directory contains only coq-shell (broken installation)
-	nonShellCount := 0
-	for _, e := range entries {
-		name := strings.ToLower(e.Name())
-		if name != "coq-shell" && name != "coq-shell.lnk" && name != "coq-shell.bat" {
-			nonShellCount++
-		}
-	}
-	if nonShellCount == 0 {
-		return "installation directory contains only coq-shell \u2014 installation appears incomplete"
-	}
-	return ""
-}
-
 func alreadyFound(found []installation, path string) bool {
 	for _, f := range found {
 		if strings.EqualFold(f.path, path) {
@@ -159,144 +187,6 @@ func alreadyFound(found []installation, path string) bool {
 	}
 	return false
 }
-
-func findAllFromRegistry() []string {
-	var results []string
-	uninstallKey := `SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall`
-
-	for _, rootKey := range []registry.Key{registry.LOCAL_MACHINE, registry.CURRENT_USER} {
-		k, err := registry.OpenKey(rootKey, uninstallKey, registry.ENUMERATE_SUB_KEYS|registry.READ)
-		if err != nil {
-			continue
-		}
-
-		subkeys, err := k.ReadSubKeyNames(-1)
-		k.Close()
-		if err != nil {
-			continue
-		}
-
-		for _, subkey := range subkeys {
-			sk, err := registry.OpenKey(rootKey, uninstallKey+`\`+subkey, registry.READ)
-			if err != nil {
-				continue
-			}
-
-			displayName, _, err := sk.GetStringValue("DisplayName")
-			if err != nil {
-				sk.Close()
-				continue
-			}
-
-			lower := strings.ToLower(displayName)
-			if strings.Contains(lower, "rocq") || strings.Contains(lower, "coq") {
-				installLoc, _, err := sk.GetStringValue("InstallLocation")
-				sk.Close()
-				if err == nil && installLoc != "" {
-					results = append(results, installLoc)
-				}
-				continue
-			}
-			sk.Close()
-		}
-	}
-
-	return results
-}
-
-func checkBinariesWindows(onLog func(string)) {
-	binaries := []string{"rocq", "coqtop", "coqc", "vsrocqtop"}
-	anyFound := false
-
-	for _, name := range binaries {
-		for _, suffix := range []string{"", ".exe"} {
-			full := name + suffix
-			if p, err := exec.LookPath(full); err == nil {
-				onLog(fmt.Sprintf("  %s \u2192 %s", name, p))
-				anyFound = true
-				break
-			}
-		}
-	}
-
-	if !anyFound {
-		onLog("  (none found in PATH)")
-	}
-}
-
-func checkVSCode(onLog func(string)) (vsrocqFound, vscoqFound bool) {
-	codeBin, err := vscode.FindCode()
-	if err != nil {
-		onLog("  VSCode not found")
-		return false, false
-	}
-	onLog(fmt.Sprintf("  CLI: %s", codeBin))
-
-	out, err := exec.Command(codeBin, "--list-extensions", "--show-versions").Output()
-	if err != nil {
-		onLog("  (could not list extensions)")
-		return false, false
-	}
-
-	onLog("  Extensions:")
-	lines := strings.Split(string(out), "\n")
-	anyExt := false
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		lower := strings.ToLower(line)
-		if strings.Contains(lower, "rocq") || strings.Contains(lower, "coq") {
-			onLog(fmt.Sprintf("    %s", line))
-			anyExt = true
-			if strings.Contains(lower, "vsrocq") {
-				vsrocqFound = true
-			}
-			if strings.Contains(lower, "vscoq") {
-				vscoqFound = true
-			}
-		}
-	}
-	if !anyExt {
-		onLog("    (no Rocq/Coq extensions)")
-	}
-	if !vsrocqFound {
-		onLog("  \u26a0 vsrocq extension not found")
-	}
-	if vscoqFound {
-		onLog("  \u26a0 vscoq extension detected (deprecated, use vsrocq instead)")
-	}
-
-	return vsrocqFound, vscoqFound
-}
-
-func checkWorkspaceWindows(onLog func(string)) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		onLog("  (could not determine home directory)")
-		return
-	}
-
-	wsDir := filepath.Join(home, "rocq-workspace")
-	if info, err := os.Stat(wsDir); err == nil && info.IsDir() {
-		onLog(fmt.Sprintf("  \u2713 %s", wsDir))
-
-		settingsPath := filepath.Join(wsDir, ".vscode", "settings.json")
-		if data, err := os.ReadFile(settingsPath); err == nil {
-			var settings map[string]interface{}
-			if err := json.Unmarshal(data, &settings); err == nil {
-				if v, ok := settings["vsrocq.path"]; ok {
-					onLog(fmt.Sprintf("  settings.json: vsrocq.path = %v", v))
-				} else {
-					onLog("  settings.json: vsrocq.path not set")
-				}
-			}
-		} else {
-			onLog("  .vscode/settings.json not found")
-		}
-	} else {
-		onLog(fmt.Sprintf("  %s not found", wsDir))
-	}
-}
-
 func checkIssues(onLog func(string), installFound, vsrocqFound, vscoqFound bool) {
 	anyIssue := false
 

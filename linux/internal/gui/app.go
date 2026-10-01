@@ -6,12 +6,12 @@ import (
 	"sort"
 	"time"
 
-	sharedgui "github.com/justme0606/rocq-platform-starter/shared/gui"
+	sharedgui "github.com/rocq-prover/rocq-platform-starter/shared/gui"
 
-	"github.com/justme0606/rocq-platform-starter/linux/internal/doctor"
-	"github.com/justme0606/rocq-platform-starter/linux/internal/installer"
-	"github.com/justme0606/rocq-platform-starter/linux/internal/manifest"
-	"github.com/justme0606/rocq-platform-starter/linux/internal/releases"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/doctor"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/installer"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/manifest"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/releases"
 )
 
 const totalSteps = 7
@@ -24,7 +24,7 @@ func Run(m *manifest.Manifest, templates fs.FS, icon []byte, version string, sho
 		Version:    version,
 		TotalSteps: totalSteps,
 		StepNames: []string{
-			"Check/install opam",
+			"Check opam",
 			"Initialize opam",
 			"Create opam switch",
 			"Configure repository",

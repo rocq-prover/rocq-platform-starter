@@ -1,12 +1,9 @@
 package releases
 
 import (
-	"fmt"
-	"strings"
+	sharedreleases "github.com/rocq-prover/rocq-platform-starter/shared/releases"
 
-	sharedreleases "github.com/justme0606/rocq-platform-starter/shared/releases"
-
-	"github.com/justme0606/rocq-platform-starter/windows/internal/manifest"
+	"github.com/rocq-prover/rocq-platform-starter/windows/internal/manifest"
 )
 
 // FetchReleases returns available release tags from GitHub, filtered to exclude
@@ -20,46 +17,20 @@ func FetchRocqVersion(tag string) (string, error) {
 	return sharedreleases.FetchRocqVersion(tag)
 }
 
-func findSignedExe(assets []sharedreleases.GHAsset) (string, string) {
-	for _, a := range assets {
-		if strings.HasPrefix(a.Name, "signed_") && strings.HasSuffix(a.Name, ".exe") {
-			return a.BrowserDownloadURL, a.Name
-		}
-	}
-	return "", ""
-}
-
-// FetchManifestForTag fetches a specific release from GitHub and builds a Windows manifest.
+// FetchManifestForTag fetches a specific release from GitHub and builds a
+// Windows manifest. The asset's sha256 comes from the digest GitHub publishes,
+// so a release picked at runtime is verified like the embedded one.
 func FetchManifestForTag(tag string) (*manifest.Manifest, error) {
-	rel, err := sharedreleases.FetchReleaseDetail(tag)
+	rocqVersion, asset, err := sharedreleases.ResolveDownloadAsset(tag, ".exe", nil)
 	if err != nil {
-		return nil, fmt.Errorf("fetch release %s: %w", tag, err)
+		return nil, err
 	}
 
-	rocqVersion := sharedreleases.InferRocqVersion(rel.Body)
-	if rocqVersion == "" {
-		return nil, fmt.Errorf("could not infer Rocq version from release %s body", tag)
-	}
-
-	exeURL, _ := findSignedExe(rel.Assets)
-	if exeURL == "" {
-		return nil, fmt.Errorf("no signed .exe asset found for release %s", tag)
-	}
-
-	m := &manifest.Manifest{
-		Channel:         "stable",
-		RocqVersion:     rocqVersion,
-		PlatformRelease: tag,
-		Assets: manifest.Assets{
-			Windows: struct {
-				X86_64 manifest.Asset `json:"x86_64"`
-			}{
-				X86_64: manifest.Asset{
-					Type: "exe",
-					URL:  exeURL,
-				},
-			},
-		},
+	m := &manifest.Manifest{Base: manifest.NewBase(rocqVersion, tag)}
+	m.Assets.Windows.X86_64 = manifest.Asset{
+		Type:   "exe",
+		URL:    asset.BrowserDownloadURL,
+		SHA256: asset.SHA256(),
 	}
 
 	return m, nil

@@ -9,10 +9,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/justme0606/rocq-platform-starter/shared/github"
-	sharedreleases "github.com/justme0606/rocq-platform-starter/shared/releases"
+	"github.com/rocq-prover/rocq-platform-starter/shared/github"
+	sharedreleases "github.com/rocq-prover/rocq-platform-starter/shared/releases"
 
-	"github.com/justme0606/rocq-platform-starter/linux/internal/manifest"
+	"github.com/rocq-prover/rocq-platform-starter/linux/internal/manifest"
 )
 
 type ghContent struct {
@@ -274,25 +274,15 @@ func FetchManifestForTag(tag string) (*manifest.Manifest, error) {
 		}
 	}
 
-	m := &manifest.Manifest{
-		Channel:         "stable",
-		RocqVersion:     rocqVersion,
-		PlatformRelease: tag,
-		Assets: manifest.Assets{
-			Linux: struct {
-				X86_64 manifest.Asset `json:"x86_64"`
-			}{
-				X86_64: manifest.Asset{
-					Type: "opam",
-					Opam: manifest.OpamConfig{
-						OCamlCompiler: ocamlCompiler,
-						SwitchPrefix:  "CP",
-						RepoName:      "rocq-released",
-						RepoURL:       "https://rocq-prover.org/opam/released",
-						Packages:      packages,
-					},
-				},
-			},
+	m := &manifest.Manifest{Base: manifest.NewBase(rocqVersion, tag)}
+	m.Assets.Linux.X86_64 = manifest.Asset{
+		Type: "opam",
+		Opam: manifest.OpamConfig{
+			OCamlCompiler: ocamlCompiler,
+			SwitchPrefix:  "CP",
+			RepoName:      "rocq-released",
+			RepoURL:       "https://rocq-prover.org/opam/released",
+			Packages:      packages,
 		},
 	}
 

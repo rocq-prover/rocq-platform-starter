@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	sharedinstaller "github.com/justme0606/rocq-platform-starter/shared/installer"
+	sharedinstaller "github.com/rocq-prover/rocq-platform-starter/shared/installer"
 
-	"github.com/justme0606/rocq-platform-starter/macos/internal/manifest"
-	"github.com/justme0606/rocq-platform-starter/macos/internal/vscode"
-	"github.com/justme0606/rocq-platform-starter/macos/internal/workspace"
+	"github.com/rocq-prover/rocq-platform-starter/macos/internal/manifest"
+	"github.com/rocq-prover/rocq-platform-starter/macos/internal/vscode"
+	"github.com/rocq-prover/rocq-platform-starter/macos/internal/workspace"
 )
 
 // Logger wraps the shared Logger type.

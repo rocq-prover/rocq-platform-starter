@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/justme0606/rocq-platform-starter/shared/github"
+	"github.com/rocq-prover/rocq-platform-starter/shared/github"
 )
 
 const (
@@ -24,10 +24,24 @@ type GHRelease struct {
 	Prerelease bool   `json:"prerelease"`
 }
 
-// GHAsset represents a GitHub release asset.
+// GHAsset represents a GitHub release asset. Digest is the checksum GitHub
+// computed itself, formatted as "sha256:<hex>"; it may be absent on older
+// releases.
 type GHAsset struct {
 	Name               string `json:"name"`
 	BrowserDownloadURL string `json:"browser_download_url"`
+	Digest             string `json:"digest"`
+}
+
+// SHA256 returns the asset's sha256 as plain hex, or "" when GitHub published
+// no digest or used another algorithm.
+func (a GHAsset) SHA256() string {
+	const prefix = "sha256:"
+	d := strings.TrimSpace(a.Digest)
+	if !strings.HasPrefix(d, prefix) {
+		return ""
+	}
+	return strings.TrimPrefix(d, prefix)
 }
 
 // GHReleaseDetail represents detailed GitHub release info.
@@ -148,4 +162,60 @@ func FetchReleaseDetail(tag string) (*GHReleaseDetail, error) {
 		return nil, err
 	}
 	return &rel, nil
+}
+
+// FindSignedAsset returns the release asset whose name starts with "signed_"
+// and ends with suffix. When prefer is non-nil, an asset it accepts wins over
+// one it rejects; the rejected ones remain a fallback, so a release that only
+// ships, say, an Intel DMG still resolves.
+func FindSignedAsset(assets []GHAsset, suffix string, prefer func(name string) bool) (GHAsset, bool) {
+	var fallback *GHAsset
+	for i := range assets {
+		a := assets[i]
+		if !strings.HasPrefix(a.Name, "signed_") || !strings.HasSuffix(a.Name, suffix) {
+			continue
+		}
+		if prefer == nil || prefer(a.Name) {
+			return a, true
+		}
+		if fallback == nil {
+			fallback = &assets[i]
+		}
+	}
+	if fallback != nil {
+		return *fallback, true
+	}
+	return GHAsset{}, false
+}
+
+// ResolveDownloadAsset fetches a release, infers its Rocq version and picks the
+// signed asset ending in suffix. It is the shared half of the macOS and Windows
+// FetchManifestForTag.
+func ResolveDownloadAsset(tag, suffix string, prefer func(name string) bool) (rocqVersion string, asset GHAsset, err error) {
+	rel, err := FetchReleaseDetail(tag)
+	if err != nil {
+		return "", GHAsset{}, fmt.Errorf("fetch release %s: %w", tag, err)
+	}
+
+	rocqVersion = InferRocqVersion(rel.Body)
+	if rocqVersion == "" {
+		return "", GHAsset{}, fmt.Errorf("could not infer Rocq version from release %s body", tag)
+	}
+
+	asset, ok := FindSignedAsset(rel.Assets, suffix, prefer)
+	if !ok {
+		return "", GHAsset{}, fmt.Errorf("no signed %s asset found for release %s", suffix, tag)
+	}
+
+	return rocqVersion, asset, nil
+}
+
+// NotIntel reports whether an asset name looks like an Apple Silicon build.
+// The Rocq Platform marks Intel DMGs in the filename rather than publishing
+// separate per-arch assets.
+func NotIntel(name string) bool {
+	lower := strings.ToLower(name)
+	return !strings.Contains(lower, "intel") &&
+		!strings.Contains(lower, "x86_64") &&
+		!strings.Contains(lower, "amd64")
 }

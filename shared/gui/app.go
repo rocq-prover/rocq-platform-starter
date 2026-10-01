@@ -13,7 +13,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/justme0606/rocq-platform-starter/shared/github"
+	"github.com/rocq-prover/rocq-platform-starter/shared/github"
 )
 
 const (

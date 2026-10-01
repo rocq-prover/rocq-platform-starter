@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/justme0606/rocq-platform-starter/windows/internal/vscode"
+	"github.com/rocq-prover/rocq-platform-starter/windows/internal/vscode"
 )
 
 // FindLanguageServerTop searches for vsrocqtop or vscoqtop in the installation directory.
