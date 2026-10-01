@@ -67,6 +67,14 @@ func RunDocker(cfg *DockerConfig) (*DockerResult, error) {
 	if err := writeDevcontainer(workspaceDir, cfg.Image, cfg.VsrocqtopPath, cfg.User); err != nil {
 		return nil, fmt.Errorf("devcontainer: %w", err)
 	}
+	// .vscode/settings.json is part of the workspace folder, so it is visible
+	// both locally and inside the container, and VSCode gives it higher
+	// priority than the devcontainer.json "customizations" settings. A stale
+	// host path left over from a previous native install (or a previous
+	// Docker variant) would otherwise shadow cfg.VsrocqtopPath forever.
+	if err := workspace.WriteVSCodeSettings(workspaceDir, "vsrocq.path", cfg.VsrocqtopPath); err != nil {
+		return nil, fmt.Errorf("vscode config: %w", err)
+	}
 	cfg.Logger.Log("Workspace and devcontainer.json created")
 	cfg.OnStep(3, "Workspace created.", 1.0)
 
