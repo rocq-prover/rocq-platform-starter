@@ -57,6 +57,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Selecting a release installed a different one** (#33). Three defects
+  compounded: `shared/gui` discarded the error from `FetchManifestForTag`, so
+  the dropdown kept showing a release whose manifest had never loaded while the
+  installer used the previous one; `findPackagePickFile` matched a
+  `package_picks` entry by the release date rather than by the Rocq version,
+  which found nothing for 2026.07.0 (Rocq 9.1, pick
+  `package-pick-9.1~2026.01.sh`) and silently matched the *wrong* version's pick
+  for four older releases; and `SwitchName` let a pre-release suffix into the
+  switch name, yielding `CP.2026.07.0~9.1+rc1`. All 18 published releases now
+  resolve to the right pick.
 - **Integrity check was a silent no-op on macOS and Windows.** The `sha256`
   fields of both assets were empty in the manifest, and `VerifySHA256` returns
   nil for an empty expected value, so a tampered download would have been
